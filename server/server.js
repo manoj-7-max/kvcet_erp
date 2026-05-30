@@ -1,0 +1,100 @@
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import http from 'http';
+import { Server } from 'socket.io';
+import connectDB from './config/db.js';
+
+import authRoutes from './routes/authRoutes.js';
+import hodRoutes from './routes/hodRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import requestRoutes from './routes/requestRoutes.js';
+import complaintRoutes from './routes/complaintRoutes.js';
+import circularRoutes from './routes/circularRoutes.js';
+import attendanceRoutes from './routes/attendanceRoutes.js';
+import academicRoutes from './routes/academicRoutes.js';
+import documentRoutes from './routes/documentRoutes.js';
+import mentoringRoutes from './routes/mentoringRoutes.js';
+import messageRoutes from './routes/messageRoutes.js';
+import timelineRoutes from './routes/timelineRoutes.js';
+import { setupSocketHandlers } from './sockets/socketHandler.js';
+
+import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
+import rateLimit from 'express-rate-limit';
+
+dotenv.config();
+
+// Connect to database
+connectDB();
+
+const app = express();
+
+// Enable CORS early so error responses get correct headers
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGINS || 'http://localhost:3000',
+  credentials: true,
+}));
+app.use(express.json());
+
+// Security Middlewares
+app.use(helmet({ crossOriginResourcePolicy: false }));
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window`
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+});
+app.use('/api/', apiLimiter);
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.ALLOWED_ORIGINS || 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+  },
+});
+
+// Setup Socket.IO handlers
+setupSocketHandlers(io);
+
+// Make io accessible from routes/controllers
+app.set('io', io);
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/requests', requestRoutes);
+app.use('/api/portal', complaintRoutes);
+app.use('/api/circulars', circularRoutes);
+app.use('/api/hod', hodRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/academic', academicRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/mentoring', mentoringRoutes);
+app.use('/api/chat', messageRoutes);
+app.use('/api/timeline', timelineRoutes);
+
+// Static folders
+app.use('/uploads', express.static('uploads'));
+
+app.get('/', (req, res) => {
+  res.send('KVCET CSE ERP API with Socket.IO is running...');
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  res.status(statusCode);
+  res.json({
+    message: err.message,
+    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+  });
+});
+
+const PORT = process.env.PORT || 5000;
+
+server.listen(PORT, () => {
+  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+});

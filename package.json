@@ -1,0 +1,16 @@
+{
+  "name": "kvcet_cse_erp",
+  "version": "1.0.0",
+  "description": "KVCET CSE ERP System",
+  "scripts": {
+    "install-all": "npm install --prefix server && npm install --prefix client",
+    "dev": "npx concurrently \"npm run dev-api\" \"npm run dev-client\"",
+    "dev-api": "npm run dev --prefix server",
+    "dev-client": "npm run dev --prefix client",
+    "start": "npx concurrently \"npm start --prefix server\" \"npm start --prefix client\"",
+    "seed": "npm run seed --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.0"
+  }
+}
