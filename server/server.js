@@ -30,11 +30,28 @@ connectDB();
 
 const app = express();
 
-// Enable CORS early so error responses get correct headers
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS || 'http://localhost:3000',
+// Configure dynamic CORS origins to support custom domains, local testing, and Vercel preview deploys
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : ['http://localhost:3000'];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const isAllowed = allowedOrigins.some(allowed => origin === allowed) || 
+                      origin.endsWith('.vercel.app') || 
+                      origin.startsWith('http://localhost:');
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-}));
+};
+
+// Enable CORS early so error responses get correct headers
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Security Middlewares
@@ -50,7 +67,7 @@ app.use('/api/', apiLimiter);
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.ALLOWED_ORIGINS || 'http://localhost:3000',
+    origin: corsOptions.origin,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   },
