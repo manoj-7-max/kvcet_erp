@@ -17,12 +17,12 @@ export default function FacultyRequestsPage() {
 
   const fetchRequests = async () => {
     try {
-      const res = await await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/requests`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/requests`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        const data = await res.json();
-        setRequests(data);
+        const json = await res.json();
+        setRequests(Array.isArray(json) ? json : (json.data || []));
       }
     } catch (error) {
       toast.error('Failed to load requests');

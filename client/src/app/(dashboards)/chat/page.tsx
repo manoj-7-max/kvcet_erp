@@ -34,7 +34,10 @@ export default function ChatPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/chat/${activeUserId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (res.ok) setMessages(await res.json());
+      if (res.ok) {
+        const res_json = await res.json();
+        setMessages(Array.isArray(res_json) ? res_json : (res_json.data || res_json));
+      }
     };
     fetchMessages();
   }, [activeUserId, token]);

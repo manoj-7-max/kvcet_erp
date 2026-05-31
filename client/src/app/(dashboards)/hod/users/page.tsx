@@ -40,8 +40,8 @@ export default function HODUserManagement() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        const data = await res.json();
-        setUsers(data);
+        const data_raw = await res.json();
+        setUsers(Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw));
       } else {
         toast.error('Failed to load users');
       }
@@ -69,7 +69,8 @@ export default function HODUserManagement() {
         body: JSON.stringify(formData)
       });
       
-      const resData = await res.json();
+      const resData_raw = await res.json();
+        const resData = Array.isArray(resData_raw) ? resData_raw : (resData_raw.data || resData_raw);
       if (res.ok) {
         toast.success(resData.message || 'User created successfully');
         setShowAddModal(false);
@@ -106,7 +107,8 @@ export default function HODUserManagement() {
         body: JSON.stringify({ isActive: newStatus })
       });
       
-      const resData = await res.json();
+      const resData_raw = await res.json();
+        const resData = Array.isArray(resData_raw) ? resData_raw : (resData_raw.data || resData_raw);
       if (res.ok) {
         toast.success(resData.message || 'User status updated');
         fetchUsers();
@@ -132,7 +134,8 @@ export default function HODUserManagement() {
         body: JSON.stringify({ newPassword })
       });
       
-      const resData = await res.json();
+      const resData_raw = await res.json();
+        const resData = Array.isArray(resData_raw) ? resData_raw : (resData_raw.data || resData_raw);
       if (res.ok) {
         toast.success(resData.message || 'Password reset completed');
         setShowPassModal(false);
@@ -154,7 +157,8 @@ export default function HODUserManagement() {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      const resData = await res.json();
+      const resData_raw = await res.json();
+        const resData = Array.isArray(resData_raw) ? resData_raw : (resData_raw.data || resData_raw);
       if (res.ok) {
         toast.success(resData.message || 'User deleted');
         fetchUsers();

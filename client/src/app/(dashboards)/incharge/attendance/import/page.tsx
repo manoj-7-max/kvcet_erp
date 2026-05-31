@@ -43,7 +43,8 @@ function AttendanceImportContent() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/incharge/classes`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const data = await res.json();
+      const data_raw = await res.json();
+        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
       if (res.ok && data.success) {
         setClasses(data.data);
         
@@ -68,7 +69,8 @@ function AttendanceImportContent() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/attendance/class/${classId}/analytics`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const data = await res.json();
+      const data_raw = await res.json();
+        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
       if (res.ok && data.success) {
         setAnalytics(data.data);
       }
@@ -148,7 +150,8 @@ function AttendanceImportContent() {
             year: parseInt(year)
           })
         });
-        const data = await res.json();
+        const data_raw = await res.json();
+        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
         if (res.ok && data.success) {
           toast.success(data.message || 'CSV attendance imported successfully!');
           setImportResult(data.data);

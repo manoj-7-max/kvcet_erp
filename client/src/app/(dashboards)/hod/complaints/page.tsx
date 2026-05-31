@@ -22,8 +22,8 @@ export default function HODComplaintsPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        const data = await res.json();
-        setComplaints(data);
+        const data_raw = await res.json();
+        setComplaints(Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw));
       }
     } catch (error) {
       toast.error('Failed to load complaints');

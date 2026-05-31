@@ -18,7 +18,8 @@ export default function HODFacultyPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        const data = await res.json();
+        const data_raw = await res.json();
+        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
         // Filter users whose role is 'faculty' or 'class_incharge'
         const filtered = data.filter((u: any) => u.role === 'faculty' || u.role === 'class_incharge');
         setFaculty(filtered);

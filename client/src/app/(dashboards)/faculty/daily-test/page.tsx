@@ -19,8 +19,8 @@ export default function FacultyDailyTestPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        const data = await res.json();
-        setStudents(data);
+        const data_raw = await res.json();
+        setStudents(Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw));
         const initialData: Record<string, { partA: number, partB: number }> = {};
         data.forEach((s: any) => initialData[s._id] = { partA: 0, partB: 0 });
         setTestData(initialData);

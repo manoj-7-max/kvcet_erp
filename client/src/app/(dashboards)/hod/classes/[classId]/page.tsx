@@ -34,7 +34,8 @@ export default function HODClassDetail({ params }: { params: Promise<{ classId: 
       const classesRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/hod/classes`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const classesData = await classesRes.json();
+      const classesData_raw = await classesRes.json();
+        const classesData = Array.isArray(classesData_raw) ? classesData_raw : (classesData_raw.data || classesData_raw);
       if (classesRes.ok && classesData.success) {
         setAllClasses(classesData.data);
         const current = classesData.data.find((c: any) => c._id === classId);
@@ -45,7 +46,8 @@ export default function HODClassDetail({ params }: { params: Promise<{ classId: 
       const studentsRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/incharge/classes/${classId}/students`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const studentsData = await studentsRes.json();
+      const studentsData_raw = await studentsRes.json();
+        const studentsData = Array.isArray(studentsData_raw) ? studentsData_raw : (studentsData_raw.data || studentsData_raw);
       if (studentsRes.ok && studentsData.success) {
         setStudents(studentsData.data);
       } else {
@@ -81,7 +83,8 @@ export default function HODClassDetail({ params }: { params: Promise<{ classId: 
           toClassId: targetClassId
         })
       });
-      const resData = await res.json();
+      const resData_raw = await res.json();
+        const resData = Array.isArray(resData_raw) ? resData_raw : (resData_raw.data || resData_raw);
       if (res.ok && resData.success) {
         toast.success(resData.message || 'Student transferred successfully');
         setShowTransferModal(false);

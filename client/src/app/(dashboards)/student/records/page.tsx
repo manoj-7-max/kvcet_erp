@@ -23,11 +23,13 @@ export default function StudentRecordsPage() {
         ]);
 
         if (marksRes.ok) {
-          const mJson = await marksRes.json();
+          const mJson_raw = await marksRes.json();
+        const mJson = Array.isArray(mJson_raw) ? mJson_raw : (mJson_raw.data || mJson_raw);
           setInternalMarks(Array.isArray(mJson) ? mJson : (mJson.data || []));
         }
         if (recordsRes.ok) {
-          const rJson = await recordsRes.json();
+          const rJson_raw = await recordsRes.json();
+        const rJson = Array.isArray(rJson_raw) ? rJson_raw : (rJson_raw.data || rJson_raw);
           setAcademicRecords(Array.isArray(rJson) ? rJson : (rJson.data || []));
         }
       } catch (error) {

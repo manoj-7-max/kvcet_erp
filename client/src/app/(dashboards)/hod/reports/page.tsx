@@ -45,7 +45,8 @@ export default function HODReportsPage() {
       const usersRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/hod/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const usersData = await usersRes.json();
+      const usersData_raw = await usersRes.json();
+        const usersData = Array.isArray(usersData_raw) ? usersData_raw : (usersData_raw.data || usersData_raw);
       const users = usersData.success ? usersData.data : [];
       const totalStudents = users.filter((u: any) => u.role === 'student').length;
       const totalFaculty = users.filter((u: any) => u.role === 'faculty' || u.role === 'class_incharge').length;
@@ -54,7 +55,8 @@ export default function HODReportsPage() {
       const hodAnalyticsRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/attendance/hod/analytics`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const hodAnalyticsData = await hodAnalyticsRes.json();
+      const hodAnalyticsData_raw = await hodAnalyticsRes.json();
+        const hodAnalyticsData = Array.isArray(hodAnalyticsData_raw) ? hodAnalyticsData_raw : (hodAnalyticsData_raw.data || hodAnalyticsData_raw);
       if (hodAnalyticsRes.ok && hodAnalyticsData.success) {
         setHodAnalytics(hodAnalyticsData.data);
       }
@@ -63,7 +65,8 @@ export default function HODReportsPage() {
       const marksRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/academic/internal-marks`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const marksData = await marksRes.json();
+      const marksData_raw = await marksRes.json();
+        const marksData = Array.isArray(marksData_raw) ? marksData_raw : (marksData_raw.data || marksData_raw);
       const marks = marksData.success ? marksData.data : [];
       let passCount = 0;
       let totalMarksCount = marks.length;
@@ -77,7 +80,8 @@ export default function HODReportsPage() {
       const complaintsRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/portal/complaints`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const complaintsData = await complaintsRes.json();
+      const complaintsData_raw = await complaintsRes.json();
+        const complaintsData = Array.isArray(complaintsData_raw) ? complaintsData_raw : (complaintsData_raw.data || complaintsData_raw);
       const complaints = complaintsData.success ? complaintsData.data : [];
       const totalComplaints = complaints.length;
       const resolvedComplaints = complaints.filter((c: any) => c.status === 'Resolved').length;
@@ -86,7 +90,8 @@ export default function HODReportsPage() {
       const requestsRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/requests`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const requestsData = await requestsRes.json();
+      const requestsData_raw = await requestsRes.json();
+        const requestsData = Array.isArray(requestsData_raw) ? requestsData_raw : (requestsData_raw.data || requestsData_raw);
       const requests = requestsData.success ? (requestsData.data || []) : [];
       const totalRequests = requests.length;
       const approvedRequests = requests.filter((r: any) => r.status === 'HOD_Approved' || r.status === 'Faculty_Approved').length;
@@ -95,7 +100,8 @@ export default function HODReportsPage() {
       const circularsRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/circulars`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const circularsData = await circularsRes.json();
+      const circularsData_raw = await circularsRes.json();
+        const circularsData = Array.isArray(circularsData_raw) ? circularsData_raw : (circularsData_raw.data || circularsData_raw);
       const circulars = circularsData.success ? circularsData.data : [];
       const circularsCount = circulars.length;
 

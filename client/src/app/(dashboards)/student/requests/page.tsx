@@ -27,8 +27,8 @@ export default function StudentRequestsPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        const data = await res.json();
-        setRequests(data);
+        const json = await res.json();
+        setRequests(Array.isArray(json) ? json : (json.data || []));
       }
     } catch (error) {
       toast.error('Failed to load requests');

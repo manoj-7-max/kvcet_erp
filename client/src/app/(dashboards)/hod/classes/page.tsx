@@ -43,7 +43,8 @@ export default function HODClassesDashboard() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/hod/classes`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const data = await res.json();
+      const data_raw = await res.json();
+        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
       if (res.ok && data.success) {
         setClasses(data.data);
       } else {
@@ -61,7 +62,8 @@ export default function HODClassesDashboard() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/hod/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const data = await res.json();
+      const data_raw = await res.json();
+        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
       if (res.ok && data.success) {
         // Filter users to role 'class_incharge'
         const inchargeUsers = data.data.filter((u: any) => u.role === 'class_incharge' && u.isActive);
@@ -91,7 +93,8 @@ export default function HODClassesDashboard() {
         },
         body: JSON.stringify(formData)
       });
-      const resData = await res.json();
+      const resData_raw = await res.json();
+        const resData = Array.isArray(resData_raw) ? resData_raw : (resData_raw.data || resData_raw);
       if (res.ok && resData.success) {
         toast.success(resData.message || 'Classroom created successfully');
         setShowAddModal(false);
@@ -124,7 +127,8 @@ export default function HODClassesDashboard() {
         },
         body: JSON.stringify({ isActive: !classRoom.isActive })
       });
-      const resData = await res.json();
+      const resData_raw = await res.json();
+        const resData = Array.isArray(resData_raw) ? resData_raw : (resData_raw.data || resData_raw);
       if (res.ok && resData.success) {
         toast.success(resData.message || 'Class status updated');
         fetchClasses();
@@ -159,7 +163,8 @@ export default function HODClassesDashboard() {
         },
         body: JSON.stringify(body)
       });
-      const data = await res.json();
+      const data_raw = await res.json();
+        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
       if (res.ok && data.success) {
         toast.success(data.message || 'Class Incharge assigned successfully');
         setShowAssignModal(false);
@@ -184,7 +189,8 @@ export default function HODClassesDashboard() {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
-      const data = await res.json();
+      const data_raw = await res.json();
+        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
       if (res.ok && data.success) {
         toast.success(data.message || 'Class promoted successfully');
         fetchClasses();
@@ -204,7 +210,8 @@ export default function HODClassesDashboard() {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
-      const data = await res.json();
+      const data_raw = await res.json();
+        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
       if (res.ok && data.success) {
         toast.success(data.message || 'Classroom deleted');
         fetchClasses();
