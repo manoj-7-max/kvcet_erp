@@ -19,8 +19,9 @@ export default function StudentDocumentsPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/documents`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error('Failed to fetch docs');
-      return res.json();
+      if (!res.ok) throw new Error('Failed to fetch documents');
+      const json = await res.json();
+      return Array.isArray(json) ? json : (json.data || []);
     }
   });
 

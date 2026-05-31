@@ -17,8 +17,8 @@ export default function StudentAttendancePage() {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
-          const data = await res.json();
-          setAttendanceData(data);
+          const json = await res.json();
+          setAttendanceData(Array.isArray(json) ? json : (json.data || []));
         }
       } catch (error) {
         toast.error('Failed to load attendance');

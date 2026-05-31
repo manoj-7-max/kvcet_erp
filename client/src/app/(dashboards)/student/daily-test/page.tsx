@@ -16,9 +16,10 @@ export default function StudentDailyTestPage() {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
-          const data = await res.json();
+          const json = await res.json();
+          const testsData = Array.isArray(json) ? json : (json.data || []);
           // Sort by newest first
-          setDailyTests(data.sort((a: any, b: any) => new Date(b.dateConducted).getTime() - new Date(a.dateConducted).getTime()));
+          setDailyTests(testsData.sort((a: any, b: any) => new Date(b.dateConducted).getTime() - new Date(a.dateConducted).getTime()));
         }
       } catch (error) {
         toast.error('Failed to load daily tests');

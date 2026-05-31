@@ -14,7 +14,8 @@ export default function StudentMentorPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Network response was not ok');
-      return res.json();
+      const json = await res.json();
+      return Array.isArray(json) ? json : (json.data || []);
     }
   });
 
@@ -25,7 +26,8 @@ export default function StudentMentorPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Network response was not ok');
-      return res.json();
+      const json = await res.json();
+      return Array.isArray(json) ? json : (json.data || []);
     }
   });
 

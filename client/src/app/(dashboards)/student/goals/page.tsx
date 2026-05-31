@@ -19,8 +19,9 @@ export default function StudentGoalsPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/timeline/goals`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error('Failed to fetch goals');
-      return res.json();
+      if (!res.ok) throw new Error('Network response was not ok');
+      const json = await res.json();
+      return Array.isArray(json) ? json : (json.data || []);
     }
   });
 
