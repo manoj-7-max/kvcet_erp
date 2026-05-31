@@ -297,6 +297,7 @@ export default function InchargeClassDetail({ params }: { params: Promise<{ clas
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/10 bg-neutral-800/30 text-neutral-400 text-xs font-semibold uppercase tracking-wider">
+                  <th className="p-4 w-16 text-center">S.No</th>
                   <th className="p-4">Student Profile</th>
                   <th className="p-4">Register Number</th>
                   <th className="p-4">Roll Number</th>
@@ -305,8 +306,13 @@ export default function InchargeClassDetail({ params }: { params: Promise<{ clas
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {filteredStudents.map(student => (
+                {filteredStudents.map((student, index) => (
                   <tr key={student._id} className="hover:bg-white/5 transition-colors">
+                    {/* Serial Number */}
+                    <td className="p-4 text-center text-sm font-medium text-neutral-500">
+                      {index + 1}
+                    </td>
+                    
                     {/* Student profile details */}
                     <td className="p-4">
                       <div className="flex items-center gap-3">
@@ -384,7 +390,7 @@ export default function InchargeClassDetail({ params }: { params: Promise<{ clas
                 ))}
                 {filteredStudents.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center text-neutral-500">
+                    <td colSpan={6} className="p-8 text-center text-neutral-500">
                       <Users className="w-12 h-12 text-neutral-600 mx-auto mb-2 opacity-30 animate-pulse" />
                       No students enrolled inside this class roster.
                     </td>
