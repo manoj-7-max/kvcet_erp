@@ -34,8 +34,7 @@ function InchargeReportsContent() {
   const fetchClasses = async () => {
     try {
       const res  = await fetch(`${API}/api/incharge/classes`, { headers: { Authorization: `Bearer ${token}` } });
-      const data_raw = await res.json();
-        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
+      const data = await res.json();
       if (res.ok && data.success) {
         setClasses(data.data);
         const qId = searchParams.get('classId');
@@ -50,8 +49,7 @@ function InchargeReportsContent() {
     setLoading(true);
     try {
       const res  = await fetch(`${API}/api/attendance/class/${classId}/analytics`, { headers: { Authorization: `Bearer ${token}` } });
-      const data_raw = await res.json();
-        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
+      const data = await res.json();
       if (res.ok && data.success) setAnalytics(data.data);
       else toast.error(data.message || 'Failed to load analytics');
     } catch { toast.error('Server error'); }

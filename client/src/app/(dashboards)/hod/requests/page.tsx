@@ -21,8 +21,8 @@ export default function HODRequestsPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        const json = await res.json();
-        setRequests(Array.isArray(json) ? json : (json.data || []));
+        const data = await res.json();
+        setRequests(data);
       }
     } catch (error) {
       toast.error('Failed to load requests');

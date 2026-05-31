@@ -16,9 +16,8 @@ export default function ClassInchargeMarksPage() {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
-          const data_raw = await res.json();
-        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
-        setMarksData(data);
+          const data = await res.json();
+          setMarksData(data);
         }
       } catch (error) {
         toast.error('Failed to load internal marks data');

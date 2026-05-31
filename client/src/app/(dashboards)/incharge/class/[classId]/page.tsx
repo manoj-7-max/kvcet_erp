@@ -58,8 +58,7 @@ export default function InchargeClassDetail({ params }: { params: Promise<{ clas
       const classesRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/incharge/classes`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const classesData_raw = await classesRes.json();
-        const classesData = Array.isArray(classesData_raw) ? classesData_raw : (classesData_raw.data || classesData_raw);
+      const classesData = await classesRes.json();
       if (classesRes.ok && classesData.success) {
         const current = classesData.data.find((c: any) => c._id === classId);
         setClassRoom(current);
@@ -72,8 +71,7 @@ export default function InchargeClassDetail({ params }: { params: Promise<{ clas
       const studentsRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/incharge/classes/${classId}/students`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const studentsData_raw = await studentsRes.json();
-        const studentsData = Array.isArray(studentsData_raw) ? studentsData_raw : (studentsData_raw.data || studentsData_raw);
+      const studentsData = await studentsRes.json();
       if (studentsRes.ok && studentsData.success) {
         setStudents(studentsData.data);
       } else {
@@ -107,8 +105,7 @@ export default function InchargeClassDetail({ params }: { params: Promise<{ clas
           department: classRoom?.department
         })
       });
-      const data_raw = await res.json();
-        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
+      const data = await res.json();
       if (res.ok && data.success) {
         toast.success(data.message || 'Student added successfully');
         setShowAddModal(false);
@@ -144,8 +141,7 @@ export default function InchargeClassDetail({ params }: { params: Promise<{ clas
         },
         body: JSON.stringify(editForm)
       });
-      const data_raw = await res.json();
-        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
+      const data = await res.json();
       if (res.ok && data.success) {
         toast.success(data.message || 'Student profile updated');
         setShowEditModal(false);
@@ -167,8 +163,7 @@ export default function InchargeClassDetail({ params }: { params: Promise<{ clas
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
-      const data_raw = await res.json();
-        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
+      const data = await res.json();
       if (res.ok && data.success) {
         toast.success(data.message || 'Student removed successfully');
         fetchClassAndRoster();
@@ -198,8 +193,7 @@ export default function InchargeClassDetail({ params }: { params: Promise<{ clas
           },
           body: JSON.stringify({ csvText })
         });
-        const data_raw = await res.json();
-        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
+        const data = await res.json();
         if (res.ok && data.success) {
           toast.success(data.message || 'CSV Import processing complete');
           setImportResult(data.data);

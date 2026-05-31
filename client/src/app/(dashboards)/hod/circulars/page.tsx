@@ -26,8 +26,7 @@ export default function HODCircularsPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        const data_raw = await res.json();
-        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
+        const data = await res.json();
         setCirculars(data);
       }
     } catch (error) {

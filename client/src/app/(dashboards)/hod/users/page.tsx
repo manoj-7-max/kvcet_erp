@@ -40,8 +40,7 @@ export default function HODUserManagement() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        const data_raw = await res.json();
-        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
+        const data = await res.json();
         setUsers(data);
       } else {
         toast.error('Failed to load users');
@@ -70,8 +69,7 @@ export default function HODUserManagement() {
         body: JSON.stringify(formData)
       });
       
-      const resData_raw = await res.json();
-        const resData = Array.isArray(resData_raw) ? resData_raw : (resData_raw.data || resData_raw);
+      const resData = await res.json();
       if (res.ok) {
         toast.success(resData.message || 'User created successfully');
         setShowAddModal(false);
@@ -108,8 +106,7 @@ export default function HODUserManagement() {
         body: JSON.stringify({ isActive: newStatus })
       });
       
-      const resData_raw = await res.json();
-        const resData = Array.isArray(resData_raw) ? resData_raw : (resData_raw.data || resData_raw);
+      const resData = await res.json();
       if (res.ok) {
         toast.success(resData.message || 'User status updated');
         fetchUsers();
@@ -135,8 +132,7 @@ export default function HODUserManagement() {
         body: JSON.stringify({ newPassword })
       });
       
-      const resData_raw = await res.json();
-        const resData = Array.isArray(resData_raw) ? resData_raw : (resData_raw.data || resData_raw);
+      const resData = await res.json();
       if (res.ok) {
         toast.success(resData.message || 'Password reset completed');
         setShowPassModal(false);
@@ -158,8 +154,7 @@ export default function HODUserManagement() {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      const resData_raw = await res.json();
-        const resData = Array.isArray(resData_raw) ? resData_raw : (resData_raw.data || resData_raw);
+      const resData = await res.json();
       if (res.ok) {
         toast.success(resData.message || 'User deleted');
         fetchUsers();

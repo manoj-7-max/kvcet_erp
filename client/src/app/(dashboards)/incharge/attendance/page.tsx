@@ -32,8 +32,7 @@ function ClassInchargeAttendanceContent() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/incharge/classes`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const data_raw = await res.json();
-        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
+      const data = await res.json();
       if (res.ok && data.success) {
         setClasses(data.data);
         const queryClassId = searchParams.get('classId');
@@ -59,8 +58,7 @@ function ClassInchargeAttendanceContent() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/attendance/class/${classId}/analytics`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const data_raw = await res.json();
-        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
+      const data = await res.json();
       if (res.ok && data.success) {
         setAnalytics(data.data);
       } else {
