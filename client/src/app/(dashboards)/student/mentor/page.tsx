@@ -18,6 +18,17 @@ export default function StudentMentorPage() {
     }
   });
 
+  const { data: tasks = [] } = useQuery({
+    queryKey: ['my-tasks'],
+    queryFn: async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/mentoring/tasks`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Network response was not ok');
+      return res.json();
+    }
+  });
+
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-bold text-white">Mentoring Hub</h1>
@@ -57,8 +68,25 @@ export default function StudentMentorPage() {
             <CheckCircle2 className="w-5 h-5 text-blue-400" />
             <h2 className="font-bold text-lg text-white">Action Items</h2>
           </div>
-          <div className="text-neutral-500 text-sm py-4">
-            Tasks assigned by your mentor will appear here. (Coming soon)
+          <div className="flex flex-col gap-4 pt-2">
+            {tasks.map((t: any) => (
+              <div key={t._id} className="bg-neutral-950 border border-white/5 rounded-xl p-4 flex flex-col gap-2 relative overflow-hidden">
+                <div className={`absolute top-0 left-0 w-1 h-full ${t.status === 'Completed' ? 'bg-emerald-500' : t.status === 'Overdue' ? 'bg-red-500' : 'bg-amber-500'}`} />
+                <div className="flex justify-between items-start pl-2">
+                  <h4 className="text-white font-medium">{t.title}</h4>
+                  <span className={`text-xs px-2 py-1 rounded-md ${t.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400' : t.status === 'Overdue' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                    {t.status || 'Pending'}
+                  </span>
+                </div>
+                <p className="pl-2 text-xs text-neutral-400">{t.description}</p>
+                <div className="pl-2 flex justify-between items-center text-xs text-neutral-500 mt-2">
+                  <span>Due: {new Date(t.dueDate).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))}
+            {tasks.length === 0 && (
+              <div className="text-neutral-500 text-sm py-4">No tasks assigned currently.</div>
+            )}
           </div>
         </div>
       </div>

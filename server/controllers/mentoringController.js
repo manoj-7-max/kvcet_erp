@@ -39,3 +39,20 @@ export const getMeetings = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+// @desc    Get tasks
+// @route   GET /api/mentoring/tasks
+export const getTasks = async (req, res) => {
+  try {
+    const query = req.user.role === 'student' ? { menteeId: req.user._id } : { mentorId: req.user._id };
+    // Need to dynamically import MentoringTask as it's not at the top yet
+    const MentoringTask = (await import('../models/MentoringTask.js')).default;
+    const tasks = await MentoringTask.find(query)
+      .populate('menteeId', 'name registerNumber')
+      .populate('mentorId', 'name')
+      .sort({ dueDate: 1 });
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

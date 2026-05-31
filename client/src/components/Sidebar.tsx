@@ -54,6 +54,7 @@ export default function Sidebar() {
     student: [
       { name: 'Dashboard', path: '/student', icon: <LayoutDashboard /> },
       { name: 'Attendance', path: '/student/attendance', icon: <Clock /> },
+      { name: 'Daily Test', path: '/student/daily-test', icon: <FileText /> },
       { name: 'Academic Records', path: '/student/records', icon: <BookOpen /> },
       { name: 'Timeline', path: '/student/timeline', icon: <Calendar /> },
       { name: 'Goals', path: '/student/goals', icon: <CheckCircle /> },
