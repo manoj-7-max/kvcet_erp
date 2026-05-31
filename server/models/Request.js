@@ -43,5 +43,8 @@ const requestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+requestSchema.index({ status: 1 });
+requestSchema.index({ createdAt: -1 });
+
 const RequestModel = mongoose.model('Request', requestSchema);
 export default RequestModel;

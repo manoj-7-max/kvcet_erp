@@ -2,29 +2,20 @@
 
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
-import { LogOut, Users, Settings, Database } from 'lucide-react';
+import { Users, Settings, Database } from 'lucide-react';
 
 export default function HODDashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
     <ProtectedRoute allowedRoles={['hod']}>
-      <div className="min-h-screen bg-neutral-950 text-white p-8">
-        <header className="flex justify-between items-center mb-12 backdrop-blur-md bg-white/5 border border-white/10 p-6 rounded-2xl">
-          <div>
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-200">
-              HOD Dashboard
-            </h1>
-            <p className="text-neutral-400 mt-1">Welcome back, {user?.name}</p>
-          </div>
-          <button 
-            onClick={logout}
-            className="flex items-center px-4 py-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-xl transition-colors border border-red-500/20"
-          >
-            <LogOut size={18} className="mr-2" />
-            Logout
-          </button>
-        </header>
+      <div className="flex flex-col gap-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-200">
+            HOD Portal
+          </h1>
+          <p className="text-neutral-400 text-sm mt-0.5">Welcome back, {user?.name}. Manage department activities and review analytics.</p>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
@@ -32,12 +23,12 @@ export default function HODDashboard() {
             { title: 'Department Settings', icon: <Settings className="w-8 h-8" />, count: 'Configure' },
             { title: 'System Logs', icon: <Database className="w-8 h-8" />, count: 'View' },
           ].map((item, i) => (
-            <div key={i} className="backdrop-blur-md bg-white/5 border border-white/10 p-6 rounded-2xl hover:border-emerald-500/50 transition-colors group cursor-pointer">
+            <div key={i} className="backdrop-blur-md bg-white/5 border border-white/10 p-6 rounded-2xl hover:border-emerald-500/50 transition-all group cursor-pointer shadow-lg hover:shadow-emerald-950/10">
               <div className="text-emerald-400 mb-4 group-hover:scale-110 transition-transform origin-left">
                 {item.icon}
               </div>
-              <h2 className="text-xl font-semibold mb-2">{item.title}</h2>
-              <p className="text-neutral-400">{item.count}</p>
+              <h2 className="text-lg font-semibold mb-1 text-white">{item.title}</h2>
+              <p className="text-neutral-400 text-sm">{item.count}</p>
             </div>
           ))}
         </div>

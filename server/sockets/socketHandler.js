@@ -12,26 +12,33 @@ export const setupSocketHandlers = (io) => {
 
     // User joins a role-based room
     socket.on('join_role', (role) => {
-      socket.join(role);
+      if (role) {
+        socket.join(role);
+        console.log(`Socket ${socket.id} joined role-based room: ${role}`);
+      }
     });
 
     // --- Chat Features ---
     socket.on('message:new', (data) => {
-      // Broadcast message to receiver
-      socket.to(data.receiverId).emit('message:new', data);
+      // Broadcast message to receiver room
+      if (data.receiverId) {
+        io.to(data.receiverId).emit('message:new', data);
+      }
     });
 
     socket.on('typing:start', (data) => {
-      socket.to(data.receiverId).emit('typing:start', data);
+      if (data.receiverId) {
+        socket.to(data.receiverId).emit('typing:start', data);
+      }
     });
 
     socket.on('typing:stop', (data) => {
-      socket.to(data.receiverId).emit('typing:stop', data);
+      if (data.receiverId) {
+        socket.to(data.receiverId).emit('typing:stop', data);
+      }
     });
 
-    // Generic broadcaster for new notifications
-    // A client can emit this, or the backend can use io.to().emit directly
-    // If a client emits this (e.g. sending a message), we broadcast it
+    // --- Standard Notification Event ---
     socket.on('notification:new', (data) => {
       const { recipientId, role } = data;
       if (recipientId) {
@@ -43,36 +50,32 @@ export const setupSocketHandlers = (io) => {
       }
     });
 
-    // Specific events mentioned in requirements
-    socket.on('message:new', (data) => {
-      if (data.recipientId) {
-        io.to(data.recipientId).emit('message:new', data);
-      }
-    });
-
+    // --- Standard Action Events ---
     socket.on('request:updated', (data) => {
-      if (data.userId) {
-        io.to(data.userId).emit('request:updated', data);
+      if (data.studentId) {
+        io.to(data.studentId.toString()).emit('request:updated', data);
       }
     });
 
     socket.on('circular:new', (data) => {
-      if (data.targetRole) {
-        io.to(data.targetRole).emit('circular:new', data);
-      } else {
-        io.emit('circular:new', data); // broadcast to all
-      }
+      io.emit('circular:new', data);
     });
 
     socket.on('complaint:updated', (data) => {
-      if (data.userId) {
-        io.to(data.userId).emit('complaint:updated', data);
+      if (data.submittedBy) {
+        io.to(data.submittedBy.toString()).emit('complaint:updated', data);
       }
     });
 
     socket.on('user:updated', (data) => {
       if (data.userId) {
-        io.to(data.userId).emit('user:updated', data);
+        io.to(data.userId.toString()).emit('user:updated', data);
+      }
+    });
+
+    socket.on('password:reset', (data) => {
+      if (data.userId) {
+        io.to(data.userId.toString()).emit('password:reset', data);
       }
     });
 

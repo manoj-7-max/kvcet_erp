@@ -1,13 +1,22 @@
 import RequestModel from '../models/Request.js';
 import Notification from '../models/Notification.js';
+import User from '../models/User.js';
 
 // @desc    Create new request
 // @route   POST /api/requests
 // @access  Private (Student)
 export const createRequest = async (req, res) => {
   try {
+    if (req.user.role !== 'student') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only students can submit requests',
+        errors: []
+      });
+    }
+
     const { type, title, description, startDate, endDate } = req.body;
-    
+
     const request = await RequestModel.create({
       studentId: req.user._id,
       type,
@@ -17,48 +26,113 @@ export const createRequest = async (req, res) => {
       endDate,
     });
 
-    // Notify faculty room
     const io = req.app.get('io');
     const notification = await Notification.create({
-      recipientId: req.user._id, // Will be ignored by room broadcast if handled manually, or we can broadcast a generic one
-      title: 'New Student Request',
-      message: `${req.user.name} submitted a new ${type} request.`,
-      type: 'request',
-    });
-    
-    // Broadcast to faculty
-    io.to('faculty').emit('notification:new', {
-      _id: notification._id,
+      recipientId: req.user._id,
       title: 'New Student Request',
       message: `${req.user.name} submitted a new ${type} request.`,
       type: 'request',
     });
 
-    res.status(201).json(request);
+    // Broadcast to faculty room
+    if (io) {
+      io.to('faculty').emit('notification:new', {
+        _id: notification._id,
+        title: 'New Student Request',
+        message: `${req.user.name} submitted a new ${type} request.`,
+        type: 'request',
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Request submitted successfully',
+      data: request
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };
 
-// @desc    Get requests
+// @desc    Get requests with pagination, filtering, and search
 // @route   GET /api/requests
 // @access  Private
 export const getRequests = async (req, res) => {
   try {
-    let requests;
+    let query = {};
+
+    // Role checks
     if (req.user.role === 'student') {
-      requests = await RequestModel.find({ studentId: req.user._id }).populate('studentId', 'name registerNumber department').sort({ createdAt: -1 });
+      query.studentId = req.user._id;
     } else if (req.user.role === 'faculty') {
-      requests = await RequestModel.find({ status: 'Pending' }).populate('studentId', 'name registerNumber department').sort({ createdAt: -1 });
+      // Faculty reviews Pending requests
+      query.status = { $in: ['Pending', 'Faculty_Approved', 'Faculty_Rejected'] };
     } else if (req.user.role === 'hod') {
-      requests = await RequestModel.find({}).populate('studentId', 'name registerNumber department').sort({ createdAt: -1 });
+      // HOD sees all
     } else {
-      requests = [];
+      return res.json({
+        success: true,
+        message: 'Requests retrieved successfully',
+        data: [],
+        pagination: { total: 0, page: 1, limit: 10, totalPages: 0 }
+      });
     }
-    
-    res.json(requests);
+
+    // Filters
+    if (req.query.status) {
+      query.status = req.query.status;
+    }
+    if (req.query.type) {
+      query.type = req.query.type;
+    }
+
+    // Search by title or student name
+    if (req.query.search) {
+      const searchRegex = { $regex: req.query.search, $options: 'i' };
+      // Search inside title OR find matching student IDs by name
+      const matchingUsers = await User.find({ name: searchRegex }).select('_id');
+      const studentIds = matchingUsers.map((u) => u._id);
+
+      query.$or = [
+        { title: searchRegex },
+        { studentId: { $in: studentIds } }
+      ];
+    }
+
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50; // default large limit to match existing view sizes
+    const skip = (page - 1) * limit;
+
+    const total = await RequestModel.countDocuments(query);
+    const requests = await RequestModel.find(query)
+      .populate('studentId', 'name registerNumber department')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    res.json({
+      success: true,
+      message: 'Requests retrieved successfully',
+      data: requests,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };
 
@@ -71,50 +145,113 @@ export const updateRequestStatus = async (req, res) => {
     const request = await RequestModel.findById(req.params.id);
 
     if (!request) {
-      return res.status(404).json({ message: 'Request not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Request not found',
+        errors: []
+      });
     }
 
-    if (req.user.role === 'faculty') {
-      request.status = status; // Faculty_Approved, Faculty_Rejected
-      request.facultyComments = comments;
-      await request.save();
+    // Prevent transitions on finalized/closed requests
+    if (['HOD_Approved', 'HOD_Rejected', 'Closed'].includes(request.status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot modify a finalized or closed request',
+        errors: []
+      });
+    }
 
-      const io = req.app.get('io');
-      
-      if (status === 'Faculty_Approved') {
-        io.to('hod').emit('notification:new', {
-          title: 'Request Approved by Faculty',
-          message: `A request needs your final approval.`,
-          type: 'request'
+    const io = req.app.get('io');
+
+    if (req.user.role === 'faculty') {
+      // Faculty validation: only transition from Pending to Faculty_Approved or Faculty_Rejected
+      if (request.status !== 'Pending') {
+        return res.status(400).json({
+          success: false,
+          message: 'Faculty can only evaluate Pending requests',
+          errors: []
         });
       }
 
-      // Notify student
-      io.to(request.studentId.toString()).emit('notification:new', {
-        title: 'Request Update',
-        message: `Your request is now ${status.replace('_', ' ')}.`,
-        type: 'request'
-      });
-      io.to(request.studentId.toString()).emit('request:updated', request);
+      if (!['Faculty_Approved', 'Faculty_Rejected'].includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid state transition for Faculty',
+          errors: []
+        });
+      }
 
-    } else if (req.user.role === 'hod') {
-      request.status = status; // HOD_Approved, HOD_Rejected
-      request.hodComments = comments;
+      request.status = status;
+      request.facultyComments = comments || '';
       await request.save();
 
-      const io = req.app.get('io');
-      
-      // Notify student
-      io.to(request.studentId.toString()).emit('notification:new', {
-        title: 'Final Decision on Request',
-        message: `Your request was ${status.replace('_', ' ')} by the HOD.`,
-        type: 'request'
+      if (io) {
+        if (status === 'Faculty_Approved') {
+          io.to('hod').emit('notification:new', {
+            title: 'Request Approved by Faculty',
+            message: `A request from student is forwarded for your final HOD approval.`,
+            type: 'request'
+          });
+        }
+
+        // Notify student
+        io.to(request.studentId.toString()).emit('notification:new', {
+          title: 'Request Evaluated',
+          message: `Your request status has been updated to ${status.replace('_', ' ')} by Faculty.`,
+          type: 'request'
+        });
+        io.to(request.studentId.toString()).emit('request:updated', request);
+      }
+
+    } else if (req.user.role === 'hod') {
+      // HOD validation: transition from Pending or Faculty_Approved to HOD_Approved or HOD_Rejected
+      if (!['Pending', 'Faculty_Approved'].includes(request.status)) {
+        return res.status(400).json({
+          success: false,
+          message: 'HOD can only evaluate Pending or Faculty Approved requests',
+          errors: []
+        });
+      }
+
+      if (!['HOD_Approved', 'HOD_Rejected'].includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid state transition for HOD',
+          errors: []
+        });
+      }
+
+      request.status = status;
+      request.hodComments = comments || '';
+      await request.save();
+
+      if (io) {
+        // Notify student
+        io.to(request.studentId.toString()).emit('notification:new', {
+          title: 'Final HOD Decision',
+          message: `Your request was officially ${status.replace('_', ' ')} by the HOD.`,
+          type: 'request'
+        });
+        io.to(request.studentId.toString()).emit('request:updated', request);
+      }
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to approve requests',
+        errors: []
       });
-      io.to(request.studentId.toString()).emit('request:updated', request);
     }
 
-    res.json(request);
+    res.json({
+      success: true,
+      message: 'Request status updated successfully',
+      data: request
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };

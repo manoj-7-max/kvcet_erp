@@ -1,42 +1,51 @@
 import Complaint from '../models/Complaint.js';
 import Notification from '../models/Notification.js';
 
-// @desc    Create new complaint
+// @desc    Create new complaint/feedback
 // @route   POST /api/portal/complaint
 // @access  Private
 export const createComplaint = async (req, res) => {
   try {
     const { title, description, category, priority, type, location } = req.body;
-    
+
     const complaint = await Complaint.create({
       title,
       description,
       category,
-      priority,
-      type: type || 'complaint',
+      priority: priority || 'medium',
+      type: req.user.role === 'student' ? 'feedback' : (type || 'complaint'),
       submittedBy: req.user._id,
       location,
     });
 
-    // Notify HOD room about new complaint
     const io = req.app.get('io');
     const notification = await Notification.create({
-      recipientId: req.user._id, // Ideally HOD role or all HODs, but for now we broadcast to 'hod' room.
-      title: `New ${complaint.type} submitted`,
-      message: `${req.user.name} submitted a new ${complaint.category} ${complaint.type}.`,
-      type: 'complaint',
-    });
-    
-    io.to('hod').emit('notification:new', {
-      _id: notification._id,
+      recipientId: req.user._id,
       title: `New ${complaint.type} submitted`,
       message: `${req.user.name} submitted a new ${complaint.category} ${complaint.type}.`,
       type: 'complaint',
     });
 
-    res.status(201).json(complaint);
+    if (io) {
+      io.to('hod').emit('notification:new', {
+        _id: notification._id,
+        title: `New ${complaint.type} submitted`,
+        message: `${req.user.name} submitted a new ${complaint.category} ${complaint.type}.`,
+        type: 'complaint',
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: `${complaint.type === 'feedback' ? 'Feedback' : 'Complaint'} submitted successfully`,
+      data: complaint
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };
 
@@ -45,21 +54,46 @@ export const createComplaint = async (req, res) => {
 // @access  Private
 export const getComplaints = async (req, res) => {
   try {
-    let complaints;
+    let query = {};
+
     if (req.user.role === 'hod' || req.user.role === 'class_incharge') {
-      complaints = await Complaint.find({}).populate('submittedBy', 'name role department').sort({ createdAt: -1 });
-    } else {
-      // Faculty and Student can only see their own
-      complaints = await Complaint.find({ submittedBy: req.user._id }).populate('submittedBy', 'name role department').sort({ createdAt: -1 });
+      // HOD and Class Incharge can see all
+      if (req.query.type) {
+        query.type = req.query.type;
+      }
+    } else if (req.user.role === 'faculty') {
+      // Faculty sees their own complaints
+      query.submittedBy = req.user._id;
+      if (req.query.type) {
+        query.type = req.query.type;
+      }
+    } else if (req.user.role === 'student') {
+      // Students see only their own feedback
+      query.submittedBy = req.user._id;
+      query.type = 'feedback';
     }
-    
-    res.json(complaints);
+
+    const complaints = await Complaint.find(query)
+      .populate('submittedBy', 'name role department')
+      .populate('comments.user', 'name role')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      message: 'Complaints retrieved successfully',
+      data: complaints
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };
 
-// @desc    Update complaint
+// @desc    Update complaint status & save comments
 // @route   PUT /api/portal/complaint/:id
 // @access  Private
 export const updateComplaint = async (req, res) => {
@@ -68,7 +102,11 @@ export const updateComplaint = async (req, res) => {
     const complaint = await Complaint.findById(req.params.id);
 
     if (!complaint) {
-      return res.status(404).json({ message: 'Complaint not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Complaint not found',
+        errors: []
+      });
     }
 
     if (status) complaint.status = status;
@@ -81,16 +119,32 @@ export const updateComplaint = async (req, res) => {
 
     await complaint.save();
 
-    const io = req.app.get('io');
-    io.to(complaint.submittedBy.toString()).emit('notification:new', {
-      title: `Complaint Updated`,
-      message: `Your complaint "${complaint.title}" has been updated.`,
-      type: 'complaint'
-    });
-    io.to(complaint.submittedBy.toString()).emit('complaint:updated', complaint);
+    // Populate comments user again for response
+    const updatedComplaint = await Complaint.findById(complaint._id)
+      .populate('submittedBy', 'name role department')
+      .populate('comments.user', 'name role')
+      .lean();
 
-    res.json(complaint);
+    const io = req.app.get('io');
+    if (io) {
+      io.to(complaint.submittedBy.toString()).emit('notification:new', {
+        title: `Complaint Updated`,
+        message: `Your complaint "${complaint.title}" has been updated.`,
+        type: 'complaint'
+      });
+      io.to(complaint.submittedBy.toString()).emit('complaint:updated', updatedComplaint);
+    }
+
+    res.json({
+      success: true,
+      message: 'Complaint updated successfully',
+      data: updatedComplaint
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };

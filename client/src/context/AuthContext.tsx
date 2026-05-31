@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 
 export interface User {
   id: string;
+  _id?: string;
   name: string;
   role: string;
   department: string;
@@ -35,18 +36,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const storedRole = localStorage.getItem('selectedRole');
 
     if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setToken(storedToken);
-      if (storedRole) setSelectedRoleState(storedRole);
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        const normalizedUser: User = {
+          ...parsedUser,
+          id: parsedUser.id || parsedUser._id,
+          _id: parsedUser.id || parsedUser._id,
+        };
+        setUser(normalizedUser);
+        setToken(storedToken);
+        if (storedRole) setSelectedRoleState(storedRole);
+      } catch (err) {
+        console.error('Failed to parse stored auth user', err);
+        // Clear broken storage
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        localStorage.removeItem('selectedRole');
+      }
     }
     setLoading(false);
   }, []);
 
   const login = (userData: User, authToken: string, role: string) => {
-    setUser(userData);
+    const normalizedUser: User = {
+      ...userData,
+      id: userData.id || userData._id || '',
+      _id: userData.id || userData._id || '',
+    };
+    setUser(normalizedUser);
     setToken(authToken);
     setSelectedRoleState(role);
-    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('user', JSON.stringify(normalizedUser));
     localStorage.setItem('token', authToken);
     localStorage.setItem('selectedRole', role);
   };

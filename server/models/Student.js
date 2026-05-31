@@ -50,6 +50,8 @@ const studentSchema = new mongoose.Schema(
   }
 );
 
+studentSchema.index({ department: 1 });
+
 studentSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();

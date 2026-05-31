@@ -7,7 +7,11 @@ import fs from 'fs';
 export const uploadDocument = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
+      return res.status(400).json({
+        success: false,
+        message: 'No file uploaded',
+        errors: []
+      });
     }
 
     const { title, category } = req.body;
@@ -21,9 +25,17 @@ export const uploadDocument = async (req, res) => {
       mimeType: req.file.mimetype,
     });
 
-    res.status(201).json(doc);
+    res.status(201).json({
+      success: true,
+      message: 'Document uploaded successfully',
+      data: doc
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };
 
@@ -32,9 +44,17 @@ export const uploadDocument = async (req, res) => {
 export const getDocuments = async (req, res) => {
   try {
     const docs = await StudentDocument.find({ studentId: req.user._id });
-    res.json(docs);
+    res.json({
+      success: true,
+      message: 'Documents retrieved successfully',
+      data: docs
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };
 
@@ -43,9 +63,13 @@ export const getDocuments = async (req, res) => {
 export const deleteDocument = async (req, res) => {
   try {
     const doc = await StudentDocument.findOne({ _id: req.params.id, studentId: req.user._id });
-    
+
     if (!doc) {
-      return res.status(404).json({ message: 'Document not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Document not found',
+        errors: []
+      });
     }
 
     // Attempt to delete file from disk
@@ -55,8 +79,16 @@ export const deleteDocument = async (req, res) => {
     }
 
     await doc.deleteOne();
-    res.json({ message: 'Document removed' });
+    res.json({
+      success: true,
+      message: 'Document removed successfully',
+      data: {}
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };

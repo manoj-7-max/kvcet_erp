@@ -49,5 +49,9 @@ const complaintSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+complaintSchema.index({ status: 1 });
+complaintSchema.index({ category: 1 });
+complaintSchema.index({ priority: 1 });
+
 const Complaint = mongoose.model('Complaint', complaintSchema);
 export default Complaint;

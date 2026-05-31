@@ -26,7 +26,7 @@ export default function Sidebar() {
       { name: 'Circulars', path: '/hod/circulars', icon: <FileText /> },
       { name: 'Reports', path: '/hod/reports', icon: <FileBarChart /> },
       { name: 'User Management', path: '/hod/users', icon: <UserPlus /> },
-      { name: 'Messages', path: '/hod/messages', icon: <MessageSquare /> },
+      { name: 'Messages', path: '/chat', icon: <MessageSquare /> },
     ],
     faculty: [
       { name: 'Dashboard', path: '/faculty', icon: <LayoutDashboard /> },

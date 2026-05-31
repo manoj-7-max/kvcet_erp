@@ -9,9 +9,17 @@ import DailyTest from '../models/DailyTest.js';
 export const addAcademicRecord = async (req, res) => {
   try {
     const record = await AcademicRecord.create(req.body);
-    res.status(201).json(record);
+    res.status(201).json({
+      success: true,
+      message: 'Academic record added successfully',
+      data: record
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };
 
@@ -25,9 +33,17 @@ export const getAcademicRecords = async (req, res) => {
     } else {
       records = await AcademicRecord.find({}).populate('studentId', 'name registerNumber');
     }
-    res.json(records);
+    res.json({
+      success: true,
+      message: 'Academic records retrieved successfully',
+      data: records
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };
 
@@ -38,7 +54,7 @@ export const getAcademicRecords = async (req, res) => {
 export const addInternalMarks = async (req, res) => {
   try {
     const { subjectCode, assessmentType, maximumMarks, marksData } = req.body;
-    
+
     const bulkOps = marksData.map((data) => ({
       updateOne: {
         filter: { studentId: data.studentId, subjectCode, assessmentType },
@@ -57,9 +73,17 @@ export const addInternalMarks = async (req, res) => {
     }));
 
     await InternalMark.bulkWrite(bulkOps);
-    res.status(200).json({ message: 'Internal marks saved successfully' });
+    res.status(200).json({
+      success: true,
+      message: 'Internal marks saved successfully',
+      data: {}
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };
 
@@ -73,9 +97,17 @@ export const getInternalMarks = async (req, res) => {
     } else {
       marks = await InternalMark.find({}).populate('studentId', 'name registerNumber');
     }
-    res.json(marks);
+    res.json({
+      success: true,
+      message: 'Internal marks retrieved successfully',
+      data: marks
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };
 
@@ -86,7 +118,7 @@ export const getInternalMarks = async (req, res) => {
 export const addDailyTests = async (req, res) => {
   try {
     const { subjectCode, deadline, dateConducted, testData } = req.body;
-    
+
     const bulkOps = testData.map((data) => ({
       updateOne: {
         filter: { studentId: data.studentId, subjectCode, dateConducted },
@@ -106,9 +138,17 @@ export const addDailyTests = async (req, res) => {
     }));
 
     await DailyTest.bulkWrite(bulkOps);
-    res.status(200).json({ message: 'Daily test marks saved successfully' });
+    res.status(200).json({
+      success: true,
+      message: 'Daily test marks saved successfully',
+      data: {}
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };
 
@@ -122,8 +162,16 @@ export const getDailyTests = async (req, res) => {
     } else {
       tests = await DailyTest.find({}).populate('studentId', 'name registerNumber');
     }
-    res.json(tests);
+    res.json({
+      success: true,
+      message: 'Daily tests retrieved successfully',
+      data: tests
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };

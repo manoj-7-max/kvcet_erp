@@ -32,6 +32,9 @@ const circularSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    attachmentUrl: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

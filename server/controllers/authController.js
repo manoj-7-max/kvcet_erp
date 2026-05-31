@@ -14,41 +14,59 @@ export const loginUser = async (req, res) => {
   const { email, registerNumber, password } = req.body;
 
   try {
-    // Find by email OR registerNumber
     const query = {};
     if (email) {
       query.email = email;
     } else if (registerNumber) {
       query.registerNumber = registerNumber;
     } else {
-      return res.status(400).json({ message: 'Please provide email or register number' });
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide email or register number',
+        errors: []
+      });
     }
 
     const user = await User.findOne(query);
 
     if (user && (await user.matchPassword(password))) {
       if (!user.isActive) {
-        return res.status(401).json({ message: 'Account disabled. Contact administrator.' });
+        return res.status(401).json({
+          success: false,
+          message: 'Account disabled. Contact administrator.',
+          errors: []
+        });
       }
 
-      // Update lastLogin
       user.lastLogin = Date.now();
       await user.save();
 
       res.json({
-        token: generateToken(user._id),
-        mustChangePassword: user.mustChangePassword,
-        user: {
-          id: user._id,
-          name: user.name,
-          role: user.role,
-          department: user.department,
-        },
+        success: true,
+        message: 'Login successful',
+        data: {
+          token: generateToken(user._id),
+          mustChangePassword: user.mustChangePassword,
+          user: {
+            id: user._id,
+            name: user.name,
+            role: user.role,
+            department: user.department,
+          },
+        }
       });
     } else {
-      res.status(401).json({ message: 'Invalid credentials' });
+      res.status(401).json({
+        success: false,
+        message: 'Invalid credentials',
+        errors: []
+      });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };

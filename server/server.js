@@ -22,8 +22,17 @@ import { setupSocketHandlers } from './sockets/socketHandler.js';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import rateLimit from 'express-rate-limit';
+import xss from 'xss-clean';
+import compression from 'compression';
+import fs from 'fs';
 
 dotenv.config();
+
+// Ensure uploads folder exists
+const uploadsDir = './uploads';
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Connect to database
 connectDB();
@@ -56,6 +65,9 @@ app.use(express.json());
 
 // Security Middlewares
 app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(mongoSanitize());
+app.use(xss());
+app.use(compression());
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -103,10 +115,10 @@ app.get('/', (req, res) => {
 // Global Error Handler
 app.use((err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  res.status(statusCode);
-  res.json({
-    message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+  res.status(statusCode).json({
+    success: false,
+    message: err.message || 'An unexpected error occurred',
+    errors: process.env.NODE_ENV === 'production' ? [] : [err.stack]
   });
 });
 

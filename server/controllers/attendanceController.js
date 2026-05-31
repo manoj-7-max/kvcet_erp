@@ -1,5 +1,4 @@
 import Attendance from '../models/Attendance.js';
-import User from '../models/User.js';
 
 // @desc    Mark attendance (bulk update)
 // @route   POST /api/attendance
@@ -7,10 +6,13 @@ import User from '../models/User.js';
 export const markAttendance = async (req, res) => {
   try {
     const { subjectCode, subjectName, attendanceData } = req.body;
-    // attendanceData is an array: [{ studentId, present: boolean }]
-    
+
     if (req.user.role !== 'faculty' && req.user.role !== 'class_incharge') {
-      return res.status(403).json({ message: 'Not authorized' });
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to mark attendance',
+        errors: []
+      });
     }
 
     const bulkOps = attendanceData.map((data) => ({
@@ -29,9 +31,17 @@ export const markAttendance = async (req, res) => {
 
     await Attendance.bulkWrite(bulkOps);
 
-    res.status(200).json({ message: 'Attendance marked successfully' });
+    res.status(200).json({
+      success: true,
+      message: 'Attendance marked successfully',
+      data: {}
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };
 
@@ -44,7 +54,6 @@ export const getAttendance = async (req, res) => {
     if (req.user.role === 'student') {
       records = await Attendance.find({ studentId: req.user._id });
     } else {
-      // For faculty/incharge, they might pass a studentId query param, otherwise return all
       const { studentId } = req.query;
       if (studentId) {
         records = await Attendance.find({ studentId }).populate('studentId', 'name registerNumber');
@@ -52,9 +61,17 @@ export const getAttendance = async (req, res) => {
         records = await Attendance.find({}).populate('studentId', 'name registerNumber');
       }
     }
-    
-    res.json(records);
+
+    res.json({
+      success: true,
+      message: 'Attendance records retrieved successfully',
+      data: records
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };

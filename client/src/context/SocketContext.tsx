@@ -5,6 +5,42 @@ import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 
+// --- GLOBAL MONKEY PATCHES ---
+// These run exactly once on client initialization
+if (typeof window !== 'undefined' && !(window as any).__responseJsonPatched) {
+  (window as any).__responseJsonPatched = true;
+  const originalJson = Response.prototype.json;
+  Response.prototype.json = async function () {
+    const obj = await originalJson.call(this);
+    // If the response follows our standardized API wrapper, unwrap the inner data
+    if (obj && typeof obj === 'object' && 'success' in obj && 'data' in obj) {
+      if (obj.success === true) {
+        return obj.data;
+      }
+    }
+    return obj;
+  };
+}
+
+if (typeof window !== 'undefined' && !(window as any).__fetchIntercepted) {
+  (window as any).__fetchIntercepted = true;
+  const originalFetch = window.fetch;
+  window.fetch = async function (...args) {
+    const res = await originalFetch.apply(this, args);
+    // If unauthorized (token expired / invalid auth), clear storage and redirect
+    if (res.status === 401) {
+      console.warn('Authentication token expired or invalid. Logging out.');
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      localStorage.removeItem('selectedRole');
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
+    }
+    return res;
+  };
+}
+
 interface NotificationType {
   _id: string;
   title: string;
@@ -109,7 +145,10 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
           });
           if (res.ok) {
             const data = await res.json();
-            setNotifications(data);
+            // Ensure data is array (Response.prototype.json handles unwrapping)
+            if (Array.isArray(data)) {
+              setNotifications(data);
+            }
           }
         } catch (error) {
           console.error('Failed to fetch notifications', error);

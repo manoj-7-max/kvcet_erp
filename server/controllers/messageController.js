@@ -6,10 +6,20 @@ import User from '../models/User.js';
 // @route   GET /api/chat/users
 export const getChatUsers = async (req, res) => {
   try {
-    const users = await User.find({ _id: { $ne: req.user._id } }).select('name role email');
-    res.json(users);
+    const users = await User.find({ _id: { $ne: req.user._id } })
+      .select('name role email')
+      .lean();
+    res.json({
+      success: true,
+      message: 'Chat users retrieved successfully',
+      data: users
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };
 
@@ -18,19 +28,34 @@ export const getChatUsers = async (req, res) => {
 export const getMessages = async (req, res) => {
   try {
     const { userId } = req.params;
-    
+
     let conversation = await Conversation.findOne({
       participants: { $all: [req.user._id, userId] }
     });
 
     if (!conversation) {
-      return res.json([]);
+      return res.json({
+        success: true,
+        message: 'No messages found',
+        data: []
+      });
     }
 
-    const messages = await Message.find({ conversationId: conversation._id }).sort({ createdAt: 1 });
-    res.json(messages);
+    const messages = await Message.find({ conversationId: conversation._id })
+      .sort({ createdAt: 1 })
+      .lean();
+
+    res.json({
+      success: true,
+      message: 'Conversation history retrieved successfully',
+      data: messages
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };
 
@@ -61,8 +86,16 @@ export const sendMessage = async (req, res) => {
     conversation.lastMessage = message._id;
     await conversation.save();
 
-    res.status(201).json(message);
+    res.status(201).json({
+      success: true,
+      message: 'Message sent successfully',
+      data: message
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      errors: [error.message]
+    });
   }
 };

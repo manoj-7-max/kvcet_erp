@@ -82,7 +82,7 @@ export default function ChatPage() {
 
     const newMsg = {
       text: inputText,
-      senderId: (user as any)?._id,
+      senderId: user?.id,
       receiverId: activeUserId,
       createdAt: new Date().toISOString()
     };
@@ -93,7 +93,7 @@ export default function ChatPage() {
     
     if (socket) {
       socket.emit('message:new', newMsg);
-      socket.emit('typing:stop', { senderId: (user as any)?._id, receiverId: activeUserId });
+      socket.emit('typing:stop', { senderId: user?.id, receiverId: activeUserId });
     }
 
     try {
@@ -114,9 +114,9 @@ export default function ChatPage() {
     setInputText(e.target.value);
     if (socket && activeUserId) {
       if (e.target.value.length > 0) {
-        socket.emit('typing:start', { senderId: (user as any)?._id, receiverId: activeUserId });
+        socket.emit('typing:start', { senderId: user?.id, receiverId: activeUserId });
       } else {
-        socket.emit('typing:stop', { senderId: (user as any)?._id, receiverId: activeUserId });
+        socket.emit('typing:stop', { senderId: user?.id, receiverId: activeUserId });
       }
     }
   };
@@ -178,7 +178,7 @@ export default function ChatPage() {
 
               <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
                 {messages.map((msg, idx) => {
-                  const isMe = msg.senderId === (user as any)?._id;
+                  const isMe = msg.senderId === user?.id;
                   return (
                     <motion.div 
                       initial={{ opacity: 0, y: 10 }}
