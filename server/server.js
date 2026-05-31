@@ -20,7 +20,7 @@ import timelineRoutes from './routes/timelineRoutes.js';
 import { setupSocketHandlers } from './sockets/socketHandler.js';
 
 import helmet from 'helmet';
-import mongoSanitize from 'express-mongo-sanitize';
+import mongoSanitizeClean from './middlewares/mongoSanitize.js';
 import rateLimit from 'express-rate-limit';
 import xssClean from './middlewares/xssClean.js';
 import compression from 'compression';
@@ -65,7 +65,7 @@ app.use(express.json());
 
 // Security Middlewares
 app.use(helmet({ crossOriginResourcePolicy: false }));
-app.use(mongoSanitize());
+app.use(mongoSanitizeClean);
 app.use(xssClean);
 app.use(compression());
 
