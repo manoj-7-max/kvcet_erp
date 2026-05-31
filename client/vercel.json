@@ -1,0 +1,10 @@
+{
+  "env": {
+    "NEXT_PUBLIC_BACKEND_URL": "https://kvcet-erp-backend.onrender.com"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_BACKEND_URL": "https://kvcet-erp-backend.onrender.com"
+    }
+  }
+}

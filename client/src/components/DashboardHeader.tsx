@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Bell, Menu, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import API_BASE_URL from '@/lib/apiConfig';
 
 export default function DashboardHeader() {
   const pathname = usePathname();
@@ -23,7 +24,7 @@ export default function DashboardHeader() {
 
   const markAsRead = async (id: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/notifications/${id}/read`, {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}` // Assuming AuthContext provides token globally, wait, token is in useSocket too or I can get it from useAuth

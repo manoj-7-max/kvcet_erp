@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { GraduationCap, Users, Shield, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import API_BASE_URL from '@/lib/apiConfig';
 
 export default function LandingPage() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
@@ -38,7 +39,7 @@ export default function LandingPage() {
         ? { registerNumber: identifier, password }
         : { email: identifier, password };
       
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/auth/login`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
