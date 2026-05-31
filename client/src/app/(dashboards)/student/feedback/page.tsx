@@ -25,7 +25,8 @@ export default function StudentFeedbackPage() {
       });
       if (res.ok) {
         const data_raw = await res.json();
-        setFeedbackList(Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw));
+        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
+        setFeedbackList(data);
       }
     } catch (error) {
       toast.error('Failed to load feedback');

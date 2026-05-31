@@ -22,7 +22,8 @@ export default function FacultyAttendancePage() {
       });
       if (res.ok) {
         const data_raw = await res.json();
-        setStudents(Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw));
+        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
+        setStudents(data);
         // Initialize attendance to true
         const initialData: Record<string, boolean> = {};
         data.forEach((s: any) => initialData[s._id] = true);

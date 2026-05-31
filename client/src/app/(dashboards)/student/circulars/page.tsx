@@ -18,7 +18,8 @@ export default function ViewCircularsPage() {
       });
       if (res.ok) {
         const data_raw = await res.json();
-        setCirculars(Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw));
+        const data = Array.isArray(data_raw) ? data_raw : (data_raw.data || data_raw);
+        setCirculars(data);
       }
     } catch (error) {
       toast.error('Failed to load circulars');
