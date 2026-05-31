@@ -229,7 +229,7 @@ function InchargeReportsContent() {
                       formatter={(v: any) => [`${v}%`, 'Attendance']}
                     />
                     <Bar dataKey="pct" radius={[4, 4, 0, 0]}>
-                      {barData.map((entry, index) => (
+                      {barData.map((entry: { name: string; pct: number }, index: number) => (
                         <Cell key={index} fill={entry.pct >= 75 ? '#10b981' : '#f43f5e'} />
                       ))}
                     </Bar>
