@@ -5,12 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { GraduationCap, Users, Shield, ArrowLeft } from 'lucide-react';
+import { GraduationCap, Users, Shield, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 export default function LandingPage() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
@@ -23,16 +24,8 @@ export default function LandingPage() {
 
   const handleRoleSelect = (roleId: string) => {
     setSelectedRole(roleId);
-    if (roleId === 'student') {
-      setIdentifier('CS2023001');
-      setPassword('student123');
-    } else if (roleId === 'faculty') {
-      setIdentifier('faculty@college.edu');
-      setPassword('faculty123');
-    } else if (roleId === 'hod') {
-      setIdentifier('hod@college.edu');
-      setPassword('admin123');
-    }
+    setIdentifier('');
+    setPassword('');
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -40,8 +33,10 @@ export default function LandingPage() {
     setIsSubmitting(true);
     
     try {
-      const isEmail = identifier.includes('@');
-      const payload = isEmail ? { email: identifier, password } : { registerNumber: identifier, password };
+      // Students login with registerNumber; faculty/HOD login with email
+      const payload = selectedRole === 'student'
+        ? { registerNumber: identifier, password }
+        : { email: identifier, password };
       
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/auth/login`, {
         method: 'POST',
@@ -49,18 +44,19 @@ export default function LandingPage() {
         body: JSON.stringify(payload),
       });
       
-      const data = await res.json();
+      const json = await res.json();
       
-      if (res.ok) {
-        toast.success(`Welcome back, ${data.user.name}`);
-        login(data.user, data.token, selectedRole || data.user.role);
+      if (res.ok && json.success) {
+        const { user, token: authToken } = json.data;
+        toast.success(`Welcome back, ${user.name}`);
+        login(user, authToken, selectedRole || user.role);
         
-        if (data.user.role === 'hod') router.push('/hod');
-        else if (data.user.role === 'faculty') router.push('/faculty');
-        else if (data.user.role === 'class_incharge') router.push('/role-selection');
+        if (user.role === 'hod') router.push('/hod');
+        else if (user.role === 'faculty') router.push('/faculty');
+        else if (user.role === 'class_incharge') router.push('/role-selection');
         else router.push('/student');
       } else {
-        toast.error(data.message || 'Login failed');
+        toast.error(json.message || 'Invalid credentials. Please try again.');
       }
     } catch (error) {
       toast.error('An error occurred. Please try again later.');
@@ -156,10 +152,11 @@ export default function LandingPage() {
                       {selectedRole === 'student' ? 'Register Number' : 'Email Address'}
                     </label>
                     <input
-                      type="text"
+                      type={selectedRole === 'student' ? 'text' : 'email'}
                       required
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
+                      autoComplete={selectedRole === 'student' ? 'username' : 'email'}
                       className="w-full bg-neutral-900/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                       placeholder={selectedRole === 'student' ? 'e.g. CS2023001' : 'name@college.edu'}
                     />
@@ -169,14 +166,25 @@ export default function LandingPage() {
                     <label className="block text-sm font-medium text-neutral-300 mb-2">
                       Password
                     </label>
-                    <input
-                      type="password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-neutral-900/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-                      placeholder="••••••••"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="current-password"
+                        className="w-full bg-neutral-900/50 border border-white/10 rounded-xl px-4 py-3 pr-12 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white transition-colors p-1"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
                   
                   <button

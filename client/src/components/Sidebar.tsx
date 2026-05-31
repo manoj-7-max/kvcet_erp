@@ -8,12 +8,12 @@ import {
   LayoutDashboard, Users, UserCheck, UserPlus,
   FileText, MessageSquare, BookOpen, Clock, FileBarChart,
   FolderOpen, AlertCircle, Calendar, CheckCircle, Landmark,
-  FileSpreadsheet, Upload, BarChart3
+  FileSpreadsheet, Upload, BarChart3, LogOut
 } from 'lucide-react';
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { user, selectedRole } = useAuth();
+  const { user, selectedRole, logout } = useAuth();
   
   const role = selectedRole || user?.role || 'student';
 
@@ -99,9 +99,9 @@ export default function Sidebar() {
         })}
       </div>
 
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-white/10 space-y-2">
         <div className="flex items-center p-3 rounded-xl bg-white/5 border border-white/10">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-white font-bold">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-white font-bold flex-shrink-0">
             {user?.name?.charAt(0) || 'U'}
           </div>
           <div className="ml-3 overflow-hidden">
@@ -109,6 +109,13 @@ export default function Sidebar() {
             <p className="text-xs text-neutral-400 capitalize truncate">{role.replace('_', ' ')}</p>
           </div>
         </div>
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all border border-transparent hover:border-red-500/20 group"
+        >
+          <LogOut className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+          <span className="text-sm font-medium">Logout</span>
+        </button>
       </div>
     </div>
   );

@@ -3,14 +3,14 @@
 import { usePathname } from 'next/navigation';
 import { useSocket } from '@/context/SocketContext';
 import { useAuth } from '@/context/AuthContext';
-import { Bell, Menu } from 'lucide-react';
+import { Bell, Menu, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DashboardHeader() {
   const pathname = usePathname();
   const { notifications, setNotifications } = useSocket();
-  const { user, token } = useAuth();
+  const { user, token, logout } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
 
   // Generate a page title based on the path
@@ -112,6 +112,15 @@ export default function DashboardHeader() {
             {user?.name?.charAt(0) || 'U'}
           </div>
         </div>
+
+        {/* Mobile logout button */}
+        <button
+          onClick={logout}
+          className="md:hidden p-2 text-red-400 hover:text-red-300 transition-colors"
+          title="Logout"
+        >
+          <LogOut className="w-5 h-5" />
+        </button>
       </div>
     </header>
   );

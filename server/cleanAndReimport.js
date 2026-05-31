@@ -22,7 +22,6 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
 import connectDB from './config/db.js';
 import User from './models/User.js';
 import Student from './models/Student.js';
@@ -114,8 +113,9 @@ const run = async () => {
 
     // ── STEP 3: Create User + Student for each row ───────────────────────
     console.log('👤 STEP 2 — Creating student ERP accounts...');
-    const salt = await bcrypt.genSalt(10);
-    const hashedPw = await bcrypt.hash(DEFAULT_PW, salt);
+    // NOTE: Do NOT manually hash the password here.
+    // The User model has a pre('save') hook that hashes it automatically.
+    // Pre-hashing would cause double-hashing and make login always fail.
 
     const credentialsList = [];
     const studentMap = new Map(); // regNo → { userId, studentDoc }
@@ -138,7 +138,7 @@ const run = async () => {
       try {
         const user = await User.create({
           name, email,
-          password:          hashedPw,
+          password:          DEFAULT_PW,   // plain text — model pre-save hook will hash it once
           role:              'student',
           department:        'CSE',
           registerNumber:    regNo,
@@ -149,7 +149,7 @@ const run = async () => {
 
         const student = await Student.create({
           name, email,
-          password:        hashedPw,
+          password:        DEFAULT_PW,   // plain text for Student record reference
           department:      'CSE',
           registerNumber:  regNo,
           userId:          user._id,
