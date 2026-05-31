@@ -72,7 +72,7 @@ export default function LandingPage() {
       <div 
         className="absolute inset-0 z-0 opacity-20"
         style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop')",
+          backgroundImage: "url('/login-bg.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
