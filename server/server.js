@@ -22,7 +22,7 @@ import { setupSocketHandlers } from './sockets/socketHandler.js';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import rateLimit from 'express-rate-limit';
-import xss from 'xss-clean';
+import xssClean from './middlewares/xssClean.js';
 import compression from 'compression';
 import fs from 'fs';
 
@@ -66,7 +66,7 @@ app.use(express.json());
 // Security Middlewares
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(mongoSanitize());
-app.use(xss());
+app.use(xssClean);
 app.use(compression());
 
 const apiLimiter = rateLimit({

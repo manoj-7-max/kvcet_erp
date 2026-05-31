@@ -1,0 +1,40 @@
+const cleanString = (str) => {
+  if (typeof str !== 'string') return str;
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+};
+
+const sanitizeObject = (obj) => {
+  if (!obj || typeof obj !== 'object') return obj;
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      if (typeof obj[key] === 'string') {
+        obj[key] = cleanString(obj[key]);
+      } else if (typeof obj[key] === 'object') {
+        sanitizeObject(obj[key]);
+      }
+    }
+  }
+  return obj;
+};
+
+export const xssClean = (req, res, next) => {
+  if (req.body) {
+    sanitizeObject(req.body);
+  }
+  if (req.query) {
+    // Mutate the query object properties in-place, compatible with Express 5 getters
+    sanitizeObject(req.query);
+  }
+  if (req.params) {
+    sanitizeObject(req.params);
+  }
+  next();
+};
+
+export default xssClean;
