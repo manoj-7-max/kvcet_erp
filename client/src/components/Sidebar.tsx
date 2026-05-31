@@ -5,9 +5,10 @@ import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import {
-  LayoutDashboard, Users, UserCheck, UserPlus, ShieldAlert,
+  LayoutDashboard, Users, UserCheck, UserPlus,
   FileText, MessageSquare, BookOpen, Clock, FileBarChart,
-  FolderOpen, AlertCircle, Settings, Calendar, CheckCircle, Landmark
+  FolderOpen, AlertCircle, Calendar, CheckCircle, Landmark,
+  FileSpreadsheet, Upload, BarChart3
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -41,12 +42,14 @@ export default function Sidebar() {
       { name: 'Chat', path: '/chat', icon: <MessageSquare /> },
     ],
     class_incharge: [
-      { name: 'Dashboard', path: '/incharge-dashboard', icon: <LayoutDashboard /> },
-      { name: 'Class Attendance', path: '/incharge/attendance', icon: <Clock /> },
-      { name: 'Internal Marks', path: '/incharge/internal-marks', icon: <FileBarChart /> },
-      { name: 'Complaints', path: '/incharge/complaints', icon: <AlertCircle /> },
-      { name: 'Circulars', path: '/incharge/circulars', icon: <FileText /> },
-      { name: 'Reports', path: '/incharge/reports', icon: <FileBarChart /> },
+      { name: 'Dashboard',      path: '/incharge-dashboard',          icon: <LayoutDashboard /> },
+      { name: 'Attendance',     path: '/incharge/attendance',         icon: <Clock /> },
+      { name: 'Import CSV',     path: '/incharge/attendance/import',  icon: <Upload /> },
+      { name: 'Internal Marks', path: '/incharge/internal-marks',     icon: <FileSpreadsheet /> },
+      { name: 'Reports',        path: '/incharge/reports',            icon: <BarChart3 /> },
+      { name: 'Complaints',     path: '/incharge/complaints',         icon: <AlertCircle /> },
+      { name: 'Circulars',      path: '/incharge/circulars',          icon: <FileText /> },
+      { name: 'Chat',           path: '/chat',                        icon: <MessageSquare /> },
     ],
     student: [
       { name: 'Dashboard', path: '/student', icon: <LayoutDashboard /> },
