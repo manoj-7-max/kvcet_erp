@@ -22,8 +22,14 @@ export default function StudentRecordsPage() {
           })
         ]);
 
-        if (marksRes.ok) setInternalMarks(await marksRes.json());
-        if (recordsRes.ok) setAcademicRecords(await recordsRes.json());
+        if (marksRes.ok) {
+          const mJson = await marksRes.json();
+          setInternalMarks(Array.isArray(mJson) ? mJson : (mJson.data || []));
+        }
+        if (recordsRes.ok) {
+          const rJson = await recordsRes.json();
+          setAcademicRecords(Array.isArray(rJson) ? rJson : (rJson.data || []));
+        }
       } catch (error) {
         toast.error('Failed to load academic data');
       }
