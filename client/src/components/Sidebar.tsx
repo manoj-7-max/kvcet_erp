@@ -72,7 +72,19 @@ export default function Sidebar() {
   return (
     <div className="w-64 h-screen border-r border-white/10 bg-neutral-950/50 backdrop-blur-xl hidden md:flex flex-col sticky top-0">
       <div className="h-20 flex items-center px-6 border-b border-white/10">
-        <div className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-200">
+        <img 
+          src="/logo.png" 
+          alt="KVCET Logo" 
+          className="h-10 object-contain w-auto" 
+          onError={(e) => {
+            // Fallback to text if image isn't loaded yet
+            e.currentTarget.style.display = 'none';
+            if (e.currentTarget.nextElementSibling) {
+              (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'block';
+            }
+          }}
+        />
+        <div className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-200 hidden">
           KVCET ERP
         </div>
       </div>

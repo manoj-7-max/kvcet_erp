@@ -81,13 +81,26 @@ export default function LandingPage() {
 
       <div className="relative z-10 w-full max-w-6xl px-6">
         <div className="text-center mb-16">
-          <motion.h1 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-200 mb-4"
+            className="flex justify-center mb-6"
           >
-            KVCET CSE ERP
-          </motion.h1>
+            <img 
+              src="/logo.png" 
+              alt="KVCET Logo" 
+              className="h-20 md:h-28 object-contain w-auto drop-shadow-2xl bg-white/10 p-4 rounded-xl"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                if (e.currentTarget.nextElementSibling) {
+                  (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'block';
+                }
+              }}
+            />
+            <h1 className="text-5xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-200 hidden">
+              KVCET CSE ERP
+            </h1>
+          </motion.div>
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
