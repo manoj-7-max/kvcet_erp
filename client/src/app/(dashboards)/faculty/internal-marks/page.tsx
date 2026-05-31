@@ -20,7 +20,7 @@ export default function FacultyInternalMarksPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setStudents(data);
+        setStudents(Array.isArray(data) ? data : (data.data || data));
         const initialData: Record<string, number> = {};
         data.forEach((s: any) => initialData[s._id] = 0);
         setMarksData(initialData);

@@ -23,7 +23,7 @@ export default function HODComplaintsPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setComplaints(data);
+        setComplaints(Array.isArray(data) ? data : (data.data || data));
       }
     } catch (error) {
       toast.error('Failed to load complaints');

@@ -22,7 +22,7 @@ export default function FacultyRequestsPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setRequests(data);
+        setRequests(Array.isArray(data) ? data : (data.data || data));
       }
     } catch (error) {
       toast.error('Failed to load requests');

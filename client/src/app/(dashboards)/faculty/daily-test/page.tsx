@@ -20,7 +20,7 @@ export default function FacultyDailyTestPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setStudents(data);
+        setStudents(Array.isArray(data) ? data : (data.data || data));
         const initialData: Record<string, { partA: number, partB: number }> = {};
         data.forEach((s: any) => initialData[s._id] = { partA: 0, partB: 0 });
         setTestData(initialData);

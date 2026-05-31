@@ -27,7 +27,7 @@ export default function HODCircularsPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setCirculars(data);
+        setCirculars(Array.isArray(data) ? data : (data.data || data));
       }
     } catch (error) {
       toast.error('Failed to load circulars');

@@ -17,7 +17,7 @@ export default function ClassInchargeMarksPage() {
         });
         if (res.ok) {
           const data = await res.json();
-          setMarksData(data);
+          setMarksData(Array.isArray(data) ? data : (data.data || data));
         }
       } catch (error) {
         toast.error('Failed to load internal marks data');

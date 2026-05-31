@@ -41,7 +41,7 @@ export default function HODUserManagement() {
       });
       if (res.ok) {
         const data = await res.json();
-        setUsers(data);
+        setUsers(Array.isArray(data) ? data : (data.data || data));
       } else {
         toast.error('Failed to load users');
       }
