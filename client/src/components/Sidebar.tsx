@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import {
   LayoutDashboard, Users, UserCheck, UserPlus, ShieldAlert,
   FileText, MessageSquare, BookOpen, Clock, FileBarChart,
-  FolderOpen, AlertCircle, Settings, Calendar, CheckCircle
+  FolderOpen, AlertCircle, Settings, Calendar, CheckCircle, Landmark
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -21,6 +21,7 @@ export default function Sidebar() {
       { name: 'Dashboard', path: '/hod', icon: <LayoutDashboard /> },
       { name: 'Faculty', path: '/hod/faculty', icon: <UserCheck /> },
       { name: 'Students', path: '/hod/students', icon: <Users /> },
+      { name: 'Classrooms', path: '/hod/classes', icon: <Landmark /> },
       { name: 'Requests', path: '/hod/requests', icon: <MessageSquare /> },
       { name: 'Complaints', path: '/hod/complaints', icon: <AlertCircle /> },
       { name: 'Circulars', path: '/hod/circulars', icon: <FileText /> },

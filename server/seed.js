@@ -10,12 +10,15 @@ import Circular from './models/Circular.js';
 import RequestModel from './models/Request.js';
 import Complaint from './models/Complaint.js';
 import Notification from './models/Notification.js';
+import ClassRoom from './models/ClassRoom.js';
 
 dotenv.config();
-connectDB();
 
 const importData = async () => {
   try {
+    console.log('Connecting to database...');
+    await connectDB();
+    
     // 1. Wipe out existing seed data to prevent duplicates
     console.log('Purging database...');
     await User.deleteMany();
@@ -25,6 +28,7 @@ const importData = async () => {
     await RequestModel.deleteMany();
     await Complaint.deleteMany();
     await Notification.deleteMany();
+    await ClassRoom.deleteMany();
 
     console.log('Inserting initial core users...');
     const users = [
@@ -64,7 +68,40 @@ const importData = async () => {
     const facultyUser = createdUsers[1];
     const inchargeUser = createdUsers[2];
 
-    // Create Student User
+    console.log('Core accounts seeded. Inserting classrooms...');
+
+    // Seed Active Classrooms
+    const class1 = await ClassRoom.create({
+      className: 'III CSE A',
+      department: 'CSE',
+      year: 3,
+      section: 'A',
+      academicYear: '2025-2026',
+      semester: 5,
+      inchargeId: inchargeUser._id,
+      studentsCount: 1,
+      isActive: true
+    });
+
+    // Target Class: II Year A Section for March 2026 Import
+    const class2 = await ClassRoom.create({
+      className: 'II CSE A',
+      department: 'CSE',
+      year: 2,
+      section: 'A',
+      academicYear: '2025-2026',
+      semester: 3,
+      inchargeId: inchargeUser._id,
+      studentsCount: 58,
+      isActive: true
+    });
+
+    // Update incharge user profile with class assignments
+    inchargeUser.assignedClasses.push(class1._id);
+    inchargeUser.assignedClasses.push(class2._id);
+    await inchargeUser.save();
+
+    // Create 1 student inside class1
     const studentUser = await User.create({
       name: 'Abhishek R',
       email: 'student@college.edu',
@@ -75,22 +112,62 @@ const importData = async () => {
       createdBy: hodUser._id,
     });
 
-    // Create Student Profile document
-    const studentProfile = await Student.create({
+    await Student.create({
       name: 'Abhishek R',
       email: 'student@college.edu',
       password: 'student123',
       department: 'CSE',
       registerNumber: 'CS2023001',
       userId: studentUser._id,
-      mentorId: facultyUser._id, // Assign faculty as mentor
+      mentorId: facultyUser._id,
       createdBy: hodUser._id,
-      year: 3
+      classId: class1._id,
+      currentSemester: 5,
+      currentSection: 'A',
+      year: 3,
+      batchYear: '2025-2026',
+      rollNumber: 'CS23A01',
+      academicStatus: 'Regular'
     });
 
-    console.log('Core accounts seeded. Inserting modules datasets...');
+    // Generate exactly 58 students inside class2 (II CSE A)
+    console.log('Seeding exactly 58 enrolled students for II CSE A...');
+    for (let i = 1; i <= 58; i++) {
+      const regNo = `CS2026${String(i).padStart(3, '0')}`;
+      const email = `student_ii_${i}@college.edu`;
+      
+      const stUser = await User.create({
+        name: `Student ${i}`,
+        email,
+        password: 'student123',
+        role: 'student',
+        department: 'CSE',
+        registerNumber: regNo,
+        createdBy: hodUser._id,
+      });
 
-    // 2. Seed Attendance records
+      await Student.create({
+        name: `Student ${i}`,
+        email,
+        password: 'student123',
+        department: 'CSE',
+        registerNumber: regNo,
+        userId: stUser._id,
+        mentorId: facultyUser._id,
+        createdBy: hodUser._id,
+        classId: class2._id,
+        currentSemester: 3,
+        currentSection: 'A',
+        year: 2,
+        batchYear: '2025-2026',
+        rollNumber: `CS26A${String(i).padStart(2, '0')}`,
+        academicStatus: 'Regular'
+      });
+    }
+
+    console.log('Classrooms and student connections established. Inserting modules datasets...');
+
+    // 2. Seed aggregate Attendance records for Abhishek R
     await Attendance.create([
       {
         studentId: studentUser._id,
@@ -149,7 +226,7 @@ const importData = async () => {
       }
     ]);
 
-    // 4. Seed Student Requests
+    // 4. Seed Student Requests for Abhishek R
     await RequestModel.create([
       {
         studentId: studentUser._id,
@@ -158,7 +235,7 @@ const importData = async () => {
         description: 'Respected Sir/Madam, I am suffering from severe viral fever, so I am unable to attend classes for two days. Kindly grant me leave.',
         startDate: new Date('2026-06-01'),
         endDate: new Date('2026-06-02'),
-        status: 'Faculty_Approved', // approved by faculty, waiting HOD final
+        status: 'Faculty_Approved',
         facultyComments: 'Genuine request, approved. Recommended for HOD approval.',
       },
       {
@@ -240,7 +317,7 @@ const importData = async () => {
       }
     ]);
 
-    console.log('Database successfully seeded with realistic, interconnected dataset!');
+    console.log('Database successfully seeded with 58 target students, classrooms, and assignments!');
     process.exit();
   } catch (error) {
     console.error(`Error with data seeding: ${error.message}`);

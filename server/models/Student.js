@@ -43,6 +43,27 @@ const studentSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+    },
+    classId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ClassRoom',
+    },
+    currentSemester: {
+      type: Number,
+    },
+    currentSection: {
+      type: String,
+    },
+    academicStatus: {
+      type: String,
+      enum: ['Regular', 'Completed', 'Discontinued'],
+      default: 'Regular',
+    },
+    batchYear: {
+      type: String,
+    },
+    rollNumber: {
+      type: String,
     }
   },
   {

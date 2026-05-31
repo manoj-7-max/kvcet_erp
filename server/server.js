@@ -7,6 +7,8 @@ import connectDB from './config/db.js';
 
 import authRoutes from './routes/authRoutes.js';
 import hodRoutes from './routes/hodRoutes.js';
+import classRoomRoutes from './routes/classRoomRoutes.js';
+import inchargeRoutes from './routes/inchargeRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import requestRoutes from './routes/requestRoutes.js';
 import complaintRoutes from './routes/complaintRoutes.js';
@@ -98,6 +100,8 @@ app.use('/api/requests', requestRoutes);
 app.use('/api/portal', complaintRoutes);
 app.use('/api/circulars', circularRoutes);
 app.use('/api/hod', hodRoutes);
+app.use('/api/hod/classes', classRoomRoutes);
+app.use('/api/incharge', inchargeRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/academic', academicRoutes);
 app.use('/api/documents', documentRoutes);

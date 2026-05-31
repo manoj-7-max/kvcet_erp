@@ -17,7 +17,8 @@ const userSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
   mustChangePassword: { type: Boolean, default: false },
   lastLogin: { type: Date },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  assignedClasses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ClassRoom' }]
 }, {
   timestamps: true
 });

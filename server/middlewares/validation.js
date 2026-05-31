@@ -85,3 +85,26 @@ export const internalMarkSchema = z.object({
     marksScored: z.number().nonnegative()
   }))
 });
+
+export const classRoomCreateSchema = z.object({
+  className: z.string().min(2, 'Class name must be at least 2 characters'),
+  department: z.string().min(2, 'Department must be specified'),
+  year: z.number().int().min(1).max(4),
+  section: z.string().min(1),
+  academicYear: z.string().min(4, 'Academic year is required'),
+  semester: z.number().int().min(1).max(8)
+});
+
+export const studentCreateSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  registerNumber: z.string().min(3, 'Register number is required'),
+  department: z.string().min(2, 'Department is required'),
+  password: z.string().min(6, 'Password must be at least 6 characters').optional(),
+  year: z.number().int().min(1).max(4).optional(),
+  currentSemester: z.number().int().min(1).max(8).optional(),
+  currentSection: z.string().optional(),
+  rollNumber: z.string().optional(),
+  batchYear: z.string().optional()
+});
+
