@@ -23,7 +23,8 @@ export default function ChatPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/chat/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      return res.json();
+      const json = await res.json();
+      return json.success ? json.data : [];
     }
   });
 
@@ -34,7 +35,10 @@ export default function ChatPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/chat/${activeUserId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (res.ok) setMessages(await res.json());
+      if (res.ok) {
+        const json = await res.json();
+        setMessages(json.success ? json.data : []);
+      }
     };
     fetchMessages();
   }, [activeUserId, token]);

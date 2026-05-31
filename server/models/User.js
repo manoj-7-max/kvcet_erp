@@ -13,6 +13,9 @@ const userSchema = new mongoose.Schema({
   department: { type: String },
   employeeId: { type: String },
   registerNumber: { type: String, sparse: true, unique: true }, // sparse because not all users are students
+  phone: { type: String },
+  bio: { type: String, maxLength: 500 },
+  dateOfBirth: { type: Date },
   mentorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   isActive: { type: Boolean, default: true },
   mustChangePassword: { type: Boolean, default: false },

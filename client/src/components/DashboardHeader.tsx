@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { useSocket } from '@/context/SocketContext';
 import { useAuth } from '@/context/AuthContext';
 import { Bell, Menu, LogOut } from 'lucide-react';
@@ -109,9 +110,9 @@ export default function DashboardHeader() {
           <div className="text-right">
             <p className="text-sm font-medium text-white">{user?.name}</p>
           </div>
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-white font-bold border border-white/20">
+          <Link href="/profile" className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-white font-bold border border-white/20 hover:ring-2 hover:ring-emerald-500 transition-all cursor-pointer">
             {user?.name?.charAt(0) || 'U'}
-          </div>
+          </Link>
         </div>
 
         {/* Mobile logout button */}
