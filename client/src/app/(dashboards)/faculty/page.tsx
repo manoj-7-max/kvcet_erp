@@ -3,6 +3,7 @@
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 import { BookOpen, Calendar, ClipboardList } from 'lucide-react';
+import Link from 'next/link';
 
 export default function FacultyDashboard() {
   const { user } = useAuth();
@@ -19,17 +20,17 @@ export default function FacultyDashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
-            { title: 'My Classes', icon: <BookOpen className="w-8 h-8" />, desc: 'View assigned courses' },
-            { title: 'Schedule', icon: <Calendar className="w-8 h-8" />, desc: 'Timetable and events' },
-            { title: 'Attendance', icon: <ClipboardList className="w-8 h-8" />, desc: 'Mark student attendance' },
+            { title: 'My Classes', icon: <BookOpen className="w-8 h-8" />, desc: 'View assigned courses', href: '/faculty/internal-marks' },
+            { title: 'Schedule', icon: <Calendar className="w-8 h-8" />, desc: 'Timetable and events', href: '/faculty/circulars' },
+            { title: 'Attendance', icon: <ClipboardList className="w-8 h-8" />, desc: 'Mark student attendance', href: '/faculty/attendance' },
           ].map((item, i) => (
-            <div key={i} className="backdrop-blur-md bg-white/5 border border-white/10 p-6 rounded-2xl hover:border-emerald-500/50 transition-all group cursor-pointer shadow-lg hover:shadow-emerald-950/10">
+            <Link key={i} href={item.href} className="backdrop-blur-md bg-white/5 border border-white/10 p-6 rounded-2xl hover:border-emerald-500/50 transition-all group cursor-pointer shadow-lg hover:shadow-emerald-950/10 block">
               <div className="text-emerald-400 mb-4 group-hover:scale-110 transition-transform origin-left">
                 {item.icon}
               </div>
               <h2 className="text-lg font-semibold mb-1 text-white">{item.title}</h2>
               <p className="text-neutral-400 text-sm">{item.desc}</p>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
