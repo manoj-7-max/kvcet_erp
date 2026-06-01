@@ -13,11 +13,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import API_BASE_URL from '@/lib/apiConfig';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
-const api = (path: string, token: string, opts: RequestInit = {}) =>
-  fetch(`${API_BASE_URL}${path}`, {
+const api = async (path: string, token: string, opts: RequestInit = {}) => {
+  const r = await fetch(`${API_BASE_URL}${path}`, {
     ...opts,
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...(opts.headers || {}) },
-  }).then(r => r.json());
+  });
+  if (!r.ok) {
+    throw new Error(`API Error: ${r.status}`);
+  }
+  return r.json();
+};
 
 const statusColor: Record<string, string> = {
   Scheduled: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
