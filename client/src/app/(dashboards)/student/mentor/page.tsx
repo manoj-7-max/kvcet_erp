@@ -397,7 +397,7 @@ export default function StudentMentorPage() {
             <textarea rows={2} placeholder="What does achieving this look like?" value={goalForm.description} onChange={e => setGoalForm(f => ({ ...f, description: e.target.value }))} className={`${inputCls} resize-none`} />
           </Field>
           <Field label="Target Date">
-            <input type="date" value={goalForm.targetDate} onChange={e => setGoalForm(f => ({ ...f, targetDate: e.target.value }))} className={inputCls} />
+            <input type="date" onClick={(e) => (e.target as any).showPicker?.()} value={goalForm.targetDate} onChange={e => setGoalForm(f => ({ ...f, targetDate: e.target.value }))} className={inputCls} />
           </Field>
           <div className="flex gap-2 pt-2">
             <button onClick={() => setShowGoalModal(false)} className={btnGhost}>Cancel</button>
@@ -430,7 +430,7 @@ export default function StudentMentorPage() {
               </div>
             </Field>
             <Field label="Target Date">
-              <input type="date" defaultValue={editingGoal.targetDate ? editingGoal.targetDate.split('T')[0] : ''} id="edit-goal-date" className={inputCls} />
+              <input type="date" onClick={(e) => (e.target as any).showPicker?.()} defaultValue={editingGoal.targetDate ? editingGoal.targetDate.split('T')[0] : ''} id="edit-goal-date" className={inputCls} />
             </Field>
             <div className="flex gap-2 pt-2">
               <button onClick={() => setEditingGoal(null)} className={btnGhost}>Cancel</button>

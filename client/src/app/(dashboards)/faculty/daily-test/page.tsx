@@ -93,6 +93,7 @@ export default function FacultyDailyTestPage() {
             <label className="block text-sm font-medium text-neutral-400 mb-1">Date Conducted</label>
             <input 
               type="date" 
+              onClick={(e) => (e.target as any).showPicker?.()}
               value={dateConducted}
               onChange={e => setDateConducted(e.target.value)}
               className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-emerald-500 focus:outline-none"
@@ -102,6 +103,7 @@ export default function FacultyDailyTestPage() {
             <label className="block text-sm font-medium text-neutral-400 mb-1">Submission Deadline (Optional)</label>
             <input 
               type="date" 
+              onClick={(e) => (e.target as any).showPicker?.()}
               value={deadline}
               onChange={e => setDeadline(e.target.value)}
               className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-emerald-500 focus:outline-none"

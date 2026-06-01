@@ -498,7 +498,7 @@ export default function FacultyMentorPage() {
             <input type="text" placeholder="e.g. Mid-Semester Review" value={meetingForm.title} onChange={e => setMeetingForm(f => ({ ...f, title: e.target.value }))} className={inputCls} />
           </Field>
           <Field label="Date & Time">
-            <input type="datetime-local" value={meetingForm.scheduledDate} onChange={e => setMeetingForm(f => ({ ...f, scheduledDate: e.target.value }))} className={inputCls} />
+            <input type="datetime-local" onClick={(e) => (e.target as any).showPicker?.()} value={meetingForm.scheduledDate} onChange={e => setMeetingForm(f => ({ ...f, scheduledDate: e.target.value }))} className={inputCls} />
           </Field>
           <div className="flex gap-2 pt-2">
             <button onClick={() => setShowMeetingModal(false)} className={btnGhost}>Cancel</button>
@@ -565,7 +565,7 @@ export default function FacultyMentorPage() {
             <textarea rows={2} placeholder="Task details..." value={taskForm.description} onChange={e => setTaskForm(f => ({ ...f, description: e.target.value }))} className={`${inputCls} resize-none`} />
           </Field>
           <Field label="Deadline">
-            <input type="date" value={taskForm.deadline} onChange={e => setTaskForm(f => ({ ...f, deadline: e.target.value }))} className={inputCls} />
+            <input type="date" onClick={(e) => (e.target as any).showPicker?.()} value={taskForm.deadline} onChange={e => setTaskForm(f => ({ ...f, deadline: e.target.value }))} className={inputCls} />
           </Field>
           <div className="flex gap-2 pt-2">
             <button onClick={() => setShowTaskModal(false)} className={btnGhost}>Cancel</button>

@@ -163,6 +163,7 @@ export default function ProfilePage() {
                   <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
                   <input
                     type="date"
+                    onClick={(e) => (e.target as any).showPicker?.()}
                     disabled={!isEditing}
                     value={profileData.dateOfBirth}
                     onChange={(e) => setProfileData({ ...profileData, dateOfBirth: e.target.value })}

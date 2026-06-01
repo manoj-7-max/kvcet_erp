@@ -18,9 +18,10 @@ export default function HODStudentsPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        const data = await res.json();
+        const json = await res.json();
+        const users = Array.isArray(json) ? json : (json.data || json);
         // Filter users whose role is 'student'
-        const filtered = data.filter((u: any) => u.role === 'student');
+        const filtered = users.filter((u: any) => u.role === 'student');
         setStudents(filtered);
       }
     } catch (err) {

@@ -160,6 +160,7 @@ export default function StudentRequestsPage() {
                       <label className="block text-sm font-medium text-neutral-400 mb-1">Start Date</label>
                       <input 
                         type="date"
+                        onClick={(e) => (e.target as any).showPicker?.()}
                         value={formData.startDate}
                         onChange={e => setFormData({...formData, startDate: e.target.value})}
                         className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-emerald-500 focus:outline-none"
@@ -169,6 +170,7 @@ export default function StudentRequestsPage() {
                       <label className="block text-sm font-medium text-neutral-400 mb-1">End Date</label>
                       <input 
                         type="date"
+                        onClick={(e) => (e.target as any).showPicker?.()}
                         value={formData.endDate}
                         onChange={e => setFormData({...formData, endDate: e.target.value})}
                         className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-emerald-500 focus:outline-none"

@@ -18,9 +18,10 @@ export default function HODFacultyPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        const data = await res.json();
+        const json = await res.json();
+        const users = Array.isArray(json) ? json : (json.data || json);
         // Filter users whose role is 'faculty' or 'class_incharge'
-        const filtered = data.filter((u: any) => u.role === 'faculty' || u.role === 'class_incharge');
+        const filtered = users.filter((u: any) => u.role === 'faculty' || u.role === 'class_incharge');
         setFaculty(filtered);
       }
     } catch (err) {

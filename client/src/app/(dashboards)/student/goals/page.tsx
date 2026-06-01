@@ -120,6 +120,7 @@ export default function StudentGoalsPage() {
                 <label className="block text-sm font-medium text-neutral-400 mb-1">Target Date</label>
                 <input 
                   type="date" 
+                  onClick={(e) => (e.target as any).showPicker?.()}
                   value={formData.targetDate} onChange={e => setFormData({...formData, targetDate: e.target.value})}
                   className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-emerald-500 focus:outline-none"
                 />
