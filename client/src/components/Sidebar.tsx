@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Users, UserCheck, UserPlus,
   FileText, MessageSquare, BookOpen, Clock, FileBarChart,
   FolderOpen, AlertCircle, Calendar, CheckCircle, Landmark,
-  FileSpreadsheet, Upload, BarChart3, LogOut
+  FileSpreadsheet, Upload, BarChart3, LogOut, GraduationCap
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -23,6 +23,7 @@ export default function Sidebar() {
       { name: 'Faculty', path: '/hod/faculty', icon: <UserCheck /> },
       { name: 'Students', path: '/hod/students', icon: <Users /> },
       { name: 'Classrooms', path: '/hod/classes', icon: <Landmark /> },
+      { name: 'Mentoring', path: '/hod/mentoring', icon: <GraduationCap /> },
       { name: 'Requests', path: '/hod/requests', icon: <MessageSquare /> },
       { name: 'Complaints', path: '/hod/complaints', icon: <AlertCircle /> },
       { name: 'Circulars', path: '/hod/circulars', icon: <FileText /> },

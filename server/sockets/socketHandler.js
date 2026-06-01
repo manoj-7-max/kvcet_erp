@@ -1,3 +1,5 @@
+const onlineUserConnections = new Map(); // userId -> number of connections
+
 export const setupSocketHandlers = (io) => {
   io.on('connection', (socket) => {
     console.log(`Socket connected: ${socket.id}`);
@@ -5,9 +7,21 @@ export const setupSocketHandlers = (io) => {
     // User joins their personal room
     socket.on('join', (userId) => {
       if (userId) {
+        socket.userId = userId; // Store for disconnect
         socket.join(userId);
         console.log(`User ${userId} joined their personal room`);
+
+        // Track online presence
+        const currentConnections = onlineUserConnections.get(userId) || 0;
+        onlineUserConnections.set(userId, currentConnections + 1);
+        
+        // Broadcast online users
+        io.emit('users:online', Array.from(onlineUserConnections.keys()));
       }
+    });
+
+    socket.on('request:online_users', () => {
+      socket.emit('users:online', Array.from(onlineUserConnections.keys()));
     });
 
     // User joins a role-based room
@@ -23,6 +37,13 @@ export const setupSocketHandlers = (io) => {
       // Broadcast message to receiver room
       if (data.receiverId) {
         io.to(data.receiverId).emit('message:new', data);
+      }
+    });
+
+    socket.on('message:delete', (data) => {
+      // Broadcast deleted message to receiver room
+      if (data.receiverId) {
+        io.to(data.receiverId).emit('message:delete', data);
       }
     });
 
@@ -81,6 +102,17 @@ export const setupSocketHandlers = (io) => {
 
     socket.on('disconnect', () => {
       console.log(`Socket disconnected: ${socket.id}`);
+      
+      // Handle online presence disconnect
+      if (socket.userId) {
+        const currentConnections = onlineUserConnections.get(socket.userId) || 0;
+        if (currentConnections <= 1) {
+          onlineUserConnections.delete(socket.userId);
+        } else {
+          onlineUserConnections.set(socket.userId, currentConnections - 1);
+        }
+        io.emit('users:online', Array.from(onlineUserConnections.keys()));
+      }
     });
   });
 };

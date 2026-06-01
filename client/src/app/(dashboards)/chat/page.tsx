@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useSocket } from '@/context/SocketContext';
 import { useQuery } from '@tanstack/react-query';
-import { MessageSquare, Send, User } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { MessageSquare, Send, User, MoreVertical, Trash2, Ban } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ChatPage() {
   const { token, user } = useAuth();
@@ -14,6 +14,9 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+  const [hoveredMsgId, setHoveredMsgId] = useState<string | null>(null);
+  const [menuOpenMsgId, setMenuOpenMsgId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch available users to chat with
@@ -47,11 +50,29 @@ export default function ChatPage() {
   useEffect(() => {
     if (!socket) return;
     
+    // Request initial online users list
+    socket.emit('request:online_users');
+
+    socket.on('users:online', (userIds: string[]) => {
+      setOnlineUsers(userIds);
+    });
+
     socket.on('message:new', (msg: any) => {
       // Only append if it belongs to the active chat
       if (msg.senderId === activeUserId || msg.receiverId === activeUserId) {
         setMessages(prev => [...prev, msg]);
       }
+    });
+
+    socket.on('message:delete', (data: any) => {
+      setMessages(prev => prev.map(m => {
+        if (m._id === data.messageId) {
+          if (data.type === 'everyone') {
+            return { ...m, isDeleted: true };
+          }
+        }
+        return m;
+      }));
     });
 
     let typingTimeout: NodeJS.Timeout;
@@ -68,7 +89,9 @@ export default function ChatPage() {
     });
 
     return () => {
+      socket.off('users:online');
       socket.off('message:new');
+      socket.off('message:delete');
       socket.off('typing:start');
       socket.off('typing:stop');
       clearTimeout(typingTimeout);
@@ -80,11 +103,20 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
+  // Click outside menu closer
+  useEffect(() => {
+    const handleClickOutside = () => setMenuOpenMsgId(null);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim() || !activeUserId) return;
 
+    const optimisticId = `temp-${Date.now()}`;
     const newMsg = {
+      _id: optimisticId,
       text: inputText,
       senderId: user?.id,
       receiverId: activeUserId,
@@ -101,7 +133,7 @@ export default function ChatPage() {
     }
 
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/chat/${activeUserId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/chat/${activeUserId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,6 +141,11 @@ export default function ChatPage() {
         },
         body: JSON.stringify({ text: newMsg.text })
       });
+      const data = await res.json();
+      if (data.success) {
+        // Swap temp ID with real ID so delete works
+        setMessages(prev => prev.map(m => m._id === optimisticId ? data.data : m));
+      }
     } catch (error) {
       console.error('Failed to save message to DB');
     }
@@ -124,6 +161,33 @@ export default function ChatPage() {
       }
     }
   };
+
+  const handleDeleteMessage = async (messageId: string, type: 'me' | 'everyone') => {
+    if (type === 'me') {
+      setMessages(prev => prev.filter(m => m._id !== messageId));
+    } else {
+      setMessages(prev => prev.map(m => m._id === messageId ? { ...m, isDeleted: true } : m));
+      if (socket) {
+        socket.emit('message:delete', { messageId, type, senderId: user?.id, receiverId: activeUserId });
+      }
+    }
+
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/chat/message/${messageId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ type })
+      });
+    } catch (error) {
+      console.error('Failed to delete message');
+    }
+  };
+
+  const activeUser = users.find((u: any) => u._id === activeUserId);
+  const isActiveUserOnline = activeUser ? onlineUsers.includes(activeUser._id) : false;
 
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)] gap-6">
@@ -147,10 +211,15 @@ export default function ChatPage() {
               <button 
                 key={u._id}
                 onClick={() => setActiveUserId(u._id)}
-                className={`w-full text-left p-4 border-b border-white/5 hover:bg-white/5 transition-colors flex items-center gap-3 ${activeUserId === u._id ? 'bg-white/10 border-l-4 border-l-emerald-500' : ''}`}
+                className={`w-full text-left p-4 border-b border-white/5 hover:bg-white/5 transition-colors flex items-center gap-3 relative ${activeUserId === u._id ? 'bg-white/10 border-l-4 border-l-emerald-500' : ''}`}
               >
-                <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 text-emerald-400">
-                  <User className="w-5 h-5" />
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 text-emerald-400">
+                    <User className="w-5 h-5" />
+                  </div>
+                  {onlineUsers.includes(u._id) && (
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-neutral-900 rounded-full" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-white font-medium truncate">{u.name}</div>
@@ -171,29 +240,90 @@ export default function ChatPage() {
           ) : (
             <>
               <div className="p-4 border-b border-white/10 bg-neutral-800/30 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                  <User className="w-5 h-5" />
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                    <User className="w-5 h-5" />
+                  </div>
+                  {isActiveUserOnline && (
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-neutral-800 rounded-full" />
+                  )}
                 </div>
                 <div>
-                  <h2 className="text-white font-bold">{users.find((u: any) => u._id === activeUserId)?.name}</h2>
-                  <p className="text-xs text-neutral-400">Online</p>
+                  <h2 className="text-white font-bold">{activeUser?.name}</h2>
+                  <p className={`text-xs ${isActiveUserOnline ? 'text-emerald-400' : 'text-neutral-500'}`}>
+                    {isActiveUserOnline ? 'Online' : 'Offline'}
+                  </p>
                 </div>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
                 {messages.map((msg, idx) => {
                   const isMe = msg.senderId === user?.id;
+                  
                   return (
                     <motion.div 
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      key={idx} 
-                      className={`flex flex-col max-w-[70%] ${isMe ? 'self-end items-end' : 'self-start items-start'}`}
+                      key={msg._id || idx} 
+                      className={`flex flex-col max-w-[70%] relative ${isMe ? 'self-end items-end' : 'self-start items-start'}`}
+                      onMouseEnter={() => setHoveredMsgId(msg._id)}
+                      onMouseLeave={() => setHoveredMsgId(null)}
                     >
-                      <div className={`px-4 py-2 rounded-2xl ${isMe ? 'bg-emerald-600 text-white rounded-tr-sm' : 'bg-neutral-800 text-neutral-200 rounded-tl-sm border border-white/10'}`}>
-                        {msg.text}
+                      <div className={`flex items-center gap-2 group ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+                        {/* The Message Bubble */}
+                        <div className={`px-4 py-2 rounded-2xl ${isMe ? 'bg-emerald-600 text-white rounded-tr-sm' : 'bg-neutral-800 text-neutral-200 rounded-tl-sm border border-white/10'} ${msg.isDeleted ? 'bg-transparent border border-white/10 text-neutral-500 italic' : ''}`}>
+                          {msg.isDeleted ? (
+                            <div className="flex items-center gap-1.5 opacity-60">
+                              <Ban className="w-3.5 h-3.5" /> This message was deleted
+                            </div>
+                          ) : (
+                            msg.text
+                          )}
+                        </div>
+
+                        {/* Actions Menu Trigger */}
+                        {(!msg.isDeleted && msg._id && !msg._id.startsWith('temp-')) && (
+                          <div className="relative">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setMenuOpenMsgId(menuOpenMsgId === msg._id ? null : msg._id); }}
+                              className={`p-1 text-neutral-400 hover:text-white rounded-full hover:bg-white/10 transition-colors ${hoveredMsgId === msg._id || menuOpenMsgId === msg._id ? 'opacity-100' : 'opacity-0'}`}
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+
+                            {/* Dropdown Menu */}
+                            <AnimatePresence>
+                              {menuOpenMsgId === msg._id && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.95 }}
+                                  className={`absolute top-full mt-1 z-10 w-44 bg-neutral-800 border border-white/10 rounded-xl shadow-xl overflow-hidden py-1 ${isMe ? 'right-0' : 'left-0'}`}
+                                >
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteMessage(msg._id, 'me'); setMenuOpenMsgId(null); }}
+                                    className="w-full text-left px-4 py-2 text-sm text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" /> Delete for me
+                                  </button>
+                                  {isMe && (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); handleDeleteMessage(msg._id, 'everyone'); setMenuOpenMsgId(null); }}
+                                      className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2"
+                                    >
+                                      <Ban className="w-3.5 h-3.5" /> Delete for everyone
+                                    </button>
+                                  )}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        )}
                       </div>
-                      <span className="text-[10px] text-neutral-500 mt-1">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+
+                      <span className={`text-[10px] text-neutral-500 mt-1 ${isMe ? 'mr-1' : 'ml-1'}`}>
+                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </motion.div>
                   );
                 })}
