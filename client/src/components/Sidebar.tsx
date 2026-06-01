@@ -47,6 +47,7 @@ export default function Sidebar() {
       { name: 'Attendance',     path: '/incharge/attendance',         icon: <Clock /> },
       { name: 'Import CSV',     path: '/incharge/attendance/import',  icon: <Upload /> },
       { name: 'Internal Marks', path: '/incharge/internal-marks',     icon: <FileSpreadsheet /> },
+      { name: 'Mentor',         path: '/incharge/mentor',             icon: <Users /> },
       { name: 'Reports',        path: '/incharge/reports',            icon: <BarChart3 /> },
       { name: 'Complaints',     path: '/incharge/complaints',         icon: <AlertCircle /> },
       { name: 'Circulars',      path: '/incharge/circulars',          icon: <FileText /> },

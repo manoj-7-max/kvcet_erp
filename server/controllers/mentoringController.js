@@ -340,7 +340,7 @@ export const createReport = async (req, res) => {
 export const getReports = async (req, res) => {
   try {
     let query = {};
-    if (req.user.role === 'faculty') query.mentorId = req.user._id;
+    if (req.user.role === 'faculty' || req.user.role === 'class_incharge') query.mentorId = req.user._id;
     else if (req.user.role === 'student') query.menteeId = req.user._id;
     // HOD sees all
 

@@ -53,7 +53,7 @@ export const hodOnly = (req, res, next) => {
 };
 
 export const facultyOnly = (req, res, next) => {
-  if (req.user && req.user.role === 'faculty') {
+  if (req.user && (req.user.role === 'faculty' || req.user.role === 'class_incharge')) {
     next();
   } else {
     res.status(403).json({ message: 'Not authorized as Faculty' });
